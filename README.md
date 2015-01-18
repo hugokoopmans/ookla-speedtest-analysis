@@ -41,3 +41,10 @@ Scripts to run this transformation and load the data into the database can be fo
 
 ## Analysis
 Now we have created a dataset to perform our analysis in R.
+
+## Ookla data
+Ookla data is not open source and thus not provided here, a small sample set can be downloade from Ookla and more test data is commercially available at ookla.com.
+
+enjoy,
+
+hugo
