@@ -2,7 +2,7 @@
 Open sourced analysis of ookla speedtest data for 4G network in Netherlands 
 
 ## Why
-This analysis is conducted on behave of T-mobile Netherlands by DIKW Consulting. DIKW Consulting acts as an independent consulting firm specialised in datascience nd statistics. Goal of this anlysis is to proof that there is a significant difference between network speeds for the 4G network.
+This analysis is conducted on behave of T-mobile Netherlands by DIKW Consulting. DIKW Consulting acts as an independent consulting firm specialised in datascience and statistics. Goal of this analysis is to proof that there is a significant difference between network speeds for the 4G network.
 
 ## Approach
 We use sample data that can be downloaded from the Ookla metrics website to set up the analysis. All analyisis and data manipulation will be done with opensource tools in such a way that the data analaysis is transparent and reproducable.

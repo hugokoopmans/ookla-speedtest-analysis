@@ -1,18 +1,24 @@
 ﻿-- data loaded from tmp
 COPY PI_OOKLA_IPHONE_DATA
-FROM '/tmp/iphone_2014-10-17.psv'
+FROM '/tmp/tm/iphone.psv'
 WITH DELIMITER '|'
 CSV HEADER;
 
 -- trema in data
 -- type windows1258
 COPY PI_OOKLA_ANDROID_DATA
-FROM '/tmp/android_2014-10-17.psv'
+FROM '/tmp/tm/android.psv'
 WITH DELIMITER '|'
-ENCODING 'WIN1258'
+--ENCODING 'WIN1258'
 CSV HEADER;
 
 COPY PI_OOKLA_WP_DATA
-FROM '/tmp/wp_2014-10-17.psv'
+FROM '/tmp/tm/wp.psv'
 WITH DELIMITER '|'
+CSV HEADER;
+
+COPY tm4gcoverage
+FROM '/tmp/TMNL_GEMEENTE_4G.csv'
+WITH DELIMITER ','
+ENCODING 'WIN1258'
 CSV HEADER;

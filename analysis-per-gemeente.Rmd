@@ -1,0 +1,25 @@
+\newpage
+
+Gemeente `r df.top20.plus.unknown$gm_naam[i]`
+-----------------
+The table shows the speed test analysis for gemeente `r df.top20.plus.unknown$gm_naam[i]`.
+
+``` {r echo=FALSE, cache=FALSE}
+
+# create temp df
+# filter specific gemeente
+df.tmp <- subset(df.4G.plus.hotspots,gm_naam == df.top20.plus.unknown$gm_naam[i])
+
+# do test result use sourced function
+df.tr.dwmload <- fn.ttest(df.tmp,"download_kbps")
+df.tr.upload <- fn.ttest(df.tmp,"upload_kbps")
+df.tr.latency <- fn.ttest(df.tmp,"latency")
+
+# print test result 
+kable(df.tr.dwmload,format = "pandoc",  caption = "Absolute comparison of means for metric: download(kbps)",align='c')
+kable(df.tr.upload,format = "pandoc",  caption = "Absolute comparison of means for metric: upload(kbps)",align='c')
+kable(df.tr.latency,format = "pandoc",  caption = "Absolute comparison of means for metric: latency",align='c')
+
+```
+
+Please note the column "Significant", if this column states "No" the test is not significant. This means there is no significant difference in means observed so the NULL Hypothesis can not be rejected. In layman's terms: You can *not conclude* that one operator has a faster 4G network then the other.

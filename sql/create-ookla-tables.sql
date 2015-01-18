@@ -1,4 +1,5 @@
 DROP TABLE PI_OOKLA_ANDROID_DATA;
+TRUNCATE TABLE PI_OOKLA_ANDROID_DATA;
 CREATE TABLE PI_OOKLA_ANDROID_DATA
   (
     TEST_ID             BIGINT,
@@ -117,7 +118,7 @@ CREATE TABLE PI_OOKLA_ANDROID_DATA
   );
   
  --ALL_DATA
- --DROP TABLE OOKLA_ALL_DATA;
+DROP TABLE OOKLA_ALL_DATA;
 CREATE TABLE OOKLA_ALL_DATA
 	(
 OS TEXT
@@ -182,7 +183,7 @@ OS TEXT
 	)
 
 --CLEAN_DATA
---DROP TABLE OOKLA_ALL_DATA_CLEAN;
+DROP TABLE OOKLA_ALL_DATA_CLEAN CASCADE;
 CREATE TABLE OOKLA_ALL_DATA_CLEAN
 (
 OS TEXT
@@ -245,10 +246,11 @@ OS TEXT
 ,GSMBITERRORRATE TEXT
 ,GSMSIGNALSTRENGTH TEXT
 ,OPERATOR TEXT
-)
+);
+
 -- Table: ookla_suspicious_devices
 
--- DROP TABLE ookla_suspicious_devices;
+DROP TABLE ookla_suspicious_devices;
 
 CREATE TABLE ookla_suspicious_devices
 (
@@ -258,4 +260,14 @@ CREATE TABLE ookla_suspicious_devices
   tests bigint,
   devices bigint,
   download_kbps double precision
-)
+);
+
+-- table 4g coverage
+drop table if exists tm4gcoverage;
+
+create table tm4gcoverage 
+(
+Gm_code text,
+Gm_naam text,
+TMNL_HAD_4G_Q4_2014 int
+);

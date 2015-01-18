@@ -19,7 +19,9 @@ END;
 $$ LANGUAGE PLPGSQL VOLATILE STRICT;
 
 -- test function
---select make_clean_data('2014-10-1','2014-11-1');
+select make_suspicious_devices('2014-10-1','2014-11-1');
+select make_suspicious_devices('2014-11-1','2014-12-1');
+select make_suspicious_devices('2014-12-1','2015-1-1');
 
 -- insert suspicious devices into table
 CREATE OR REPLACE FUNCTION MAKE_CLEAN_DATA(DATE,DATE) RETURNS INTEGER AS $$
@@ -54,8 +56,8 @@ INSERT INTO OOKLA_ALL_DATA_CLEAN (
       END AS OPERATOR
       FROM OOKLA_ALL_DATA A
       WHERE A.TEST_DATE >= V_STARTPERIOD AND A.TEST_DATE < V_ENDPERIOD AND 
-      A.OS IN ('Android','iOS')
-      AND
+      --A.OS IN ('Android','iOS')
+      --AND
 	  --this is to remove Windows Mobile as Ookla claims the version is unstable; they also do not take it into account in their own analyses
 	  -- windows mobile is under 2% of all measures and has a lot of dirty data
       NOT EXISTS 
@@ -68,3 +70,5 @@ $$ LANGUAGE PLPGSQL VOLATILE STRICT;
 
 -- tst make clean data
 select make_clean_data('2014-10-1','2014-11-1');
+select make_clean_data('2014-11-1','2014-12-1');
+select make_clean_data('2014-12-1','2015-1-1');
