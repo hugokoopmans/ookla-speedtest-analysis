@@ -4,7 +4,7 @@ Gemeente `r df.top20.plus.unknown$gm_naam[i]`
 -----------------
 The table shows the speed test analysis for gemeente `r df.top20.plus.unknown$gm_naam[i]`. For this test the confidence level is set to `r 100*conflevel`%.
 
-``` {r echo=FALSE, cache=FALSE}
+``` {r echo=FALSE, cache=FALSE, results='asis'}
 
 # create temp df
 # filter specific gemeente
@@ -16,10 +16,36 @@ df.tr.upload <- fn.ttest(df.tmp,"upload_kbps",conflevel)
 df.tr.latency <- fn.ttest(df.tmp,"latency",conflevel)
 
 # print test result 
-kable(df.tr.dwmload,format = "pandoc",  caption = "Absolute comparison of means for metric: download(kbps)",align='c')
-kable(df.tr.upload,format = "pandoc",  caption = "Absolute comparison of means for metric: upload(kbps)",align='c')
-kable(df.tr.latency,format = "pandoc",  caption = "Absolute comparison of means for metric: latency",align='c')
+print(xtable(df.tr.dwnload,format = "pandoc" ,  caption = "Comparison of means for metric: download(kbps)",row.names=FALSE, booktabs=TRUE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
+print(xtable(df.tr.upload,format = "pandoc" ,  caption = "Comparison of means for metric: upload(kbps)",row.names=FALSE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
+print(xtable(df.tr.latency,format = "pandoc",  caption = "Comparison of means for metric: latency(ms)",row.names=FALSE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
 
 ```
 
+
+
 Please note the column "Significant", if this column states "No" the test is not significant at the `r 100*conflevel`% confidence level. This means there is no significant difference in means observed so the NULL Hypothesis can not be rejected. In layman's terms: You can *not conclude* that one operator has a faster 4G network then the other.
+
+**Explanation of terms**
+
+\footnotesize
+
+**Sample 1** : Number of speedtest samples for operator 1.
+
+**Sample 2** : Number of speedtest samples for operator 2.
+
+**Mean 1** : Average speed of speedtests for operator 1 in KBps. A Higher number here means that this operator has a fast download(or upload) speed. For the latency a higher number means you have to wait longer contact webpages.
+
+**Mean 2** : Average speed of speedtests for operator 2 in KBps. A Higher number here means that this operator has a fast download(or upload) speed. For the latency a higher number means you have to wait longer contact webpages.
+
+**P-value** : The test statistic, for more explanation see the paragraph P-Value above
+
+**Sign.** : Short for Significance. We compare the test statistic with the predefined confidence level(`r conflevel`). 'Yes' means the test is significant, 'No' means the test is not significant."))
+
+**Diff of Means** : Difference of the means (DoM) is the difference of Mean 1 and Mean 2(Mean 1 - Mean 2). A big positive number here means operator 1 has a faster speed then operator 2. A big negative number means that operator 2 has a faster speed then operator 1. The number after the 'x/-' signs denotes the confidence bounds we get from the test, a big number here means we are not very sure about the DoM a small number means we are very sure.
+
+**Abs(Kbps)** : Absolute minimal difference in speed. We compare the average speed of the two operators, this difference is calculated and based on the confidence bounds we get at least a minimum difference equal to this number. A bigger number means there is a bigger difference in the metric of both operators.")
+
+**Rel(%)** : Relative difference in percentage. It is calculated as the minimum absolute difference divided by the slower of the two operatorsaverage speed.
+
+\normalsize

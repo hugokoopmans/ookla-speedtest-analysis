@@ -1,0 +1,843 @@
+---
+title: "Independent Speed test Analysis of 4G Mobile Networks \\ Performed by DIKW Consulting"
+author: "Hugo Koopmans"
+date: "07-01-2015"
+output:
+  pdf_document:
+    template: ./templates/mytemplatedikw.tex
+    fig_height: 4
+    keep_tex: yes
+    toc: yes
+    
+  word_document: default
+---
+
+\newpage
+
+Colophon
+-------------
+This analysis is performed by DIKW Consulting.
+
+DIKW Consulting is a consulting firm that takes her customers on the path from Data to information to Knowledge to Wisdom. Our expertise is in the field of data logistics, datawarehousing, datamining and machine learning. 
+
+For questions contact Hugo Koopmans at
+hugo.koopmans@dikw.com or
++31 6 43106780
+
+Code generation
+---------------
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+\newpage
+
+Introduction
+===========
+This document is a report of a statistical analysis of Ookla Speed test data. The time period we consider is Q4 2014 so the months October, November and December of 2014. 
+We perform an analysis of [Ookla](http://www.ookla.com/) speed test data on three different measures: 
+* download speed 
+* upload speed 
+* latency(or ping) 
+
+On these metrics we compare the three major providers of 4G mobile networks in the Netherlands, Vodafone, KPN and T-Mobile.
+
+T-Mobile has asked DIKW Consulting to perform this test as an independent third party. DIKW Consulting was payed to perform this test by T-mobile and has no other intentions then to perform this test by it's own high quality standards. The analysis was performed by generally accepted and approved standards and statistical methods using open source tools.
+
+We let the data speak for itself.
+
+If you have questions you can contact [DIKW Consulting](http://www.dikw.nl). If you want to repeat this test by yourself you are welcome to do so, all necessary scripts are available on GitHub. The data is commercially available at [Ookla](http://www.ookla.com/).
+
+This analysis, method, tools and scripts are open sourced and placed on GitHub, see the read-me on the GitHub [repository](https://github.com/hugokoopmans/ookla-speedtest-analysis).
+
+Data
+======
+For this analysis we use a PostgreSQL database that is locally installed.
+
+The data is loaded from three different files, each file resembling a mobile platform(Android,iPhone and Windows mobile). The data is loaded as-is as it was received from the Ookla server. Scripts to load this data directly into PostgreSQL db can be found in the GitHub repository.
+
+All scripts to process the data are in SQL(available on GitHub) or R(included in this document, thanks to [knitr](http://yihui.name/knitr/))
+
+```{r options , echo=FALSE, cache=FALSE}
+
+# set global chunk options 
+library(knitr)
+opts_chunk$set(echo=FALSE, cache=TRUE, tidy=TRUE, warning=FALSE, message=FALSE, error=TRUE)
+
+# load functions
+source("statistical-analysis.R")
+
+```
+
+
+Let's get the data and do some basic counts.
+
+```{r get-raw-data}
+
+# postgreSQL
+require("RPostgreSQL", lib.loc="~/R/x86_64-pc-linux-gnu-library/3.0")
+
+# Establish connection to PoststgreSQL using RPostgreSQL
+drv <- dbDriver("PostgreSQL")
+
+# read data from 4Gdb
+# Full version of connection setting
+con <- dbConnect(drv, dbname="4Gdb",host="localhost",port=5432,user="4Guser",password="4Gpassword" )
+
+# all data joined
+df.ad <- dbReadTable(con, c("ookla_all_data"))
+
+# disconnect
+dbDisconnect(con)
+```
+
+The raw data
+---------------
+From the raw files downloaded from the Ookla server per device type we load these into individual tables. 
+In the table below we count the number of speed tests per device type.
+
+```{r raw-table}
+library(knitr)
+tbl <- addmargins(table(df.ad$os))
+#kable(as.data.frame(cbind(tbl,100*prop.table(tbl))),col.names = c('count','percentage'), digits = 2,caption="Raw test data counts")
+
+kable(as.data.frame(tbl),col.names = c('','Counts'), caption="Raw test data counts")
+
+```
+
+So we start this analysis with `r nrow(df.ad)` speed tests, which are represented as rows in the raw data set downloaded from Ookla.
+
+Data Analyses
+---------------
+To understand the data better we do some analysis and we look at suspicious artifacts that could influence results. Typically we will look for device-id's that are used too often. Locations(specific latitude-longitude coordinates) that occur too often. We will look at the time series to see if there is a peak or pattern. We check if there are measurements that exceed the theoretical maximum speeds for the technology used.
+
+After all these checks we end up with a data set that is cleaned and ready to perform a statistical significance test on the investigated metrics.
+
+### Suspicious devices
+Are there any devices that perform tests very frequently? 
+
+Let's look at a frequency plot of devices that occur more then **ten** times in each month. So on the right hand side we see devices that are used very often, some of them even on an hourly basis. Obviously those devices are not in the hands of real customers so these will be removed from the data set.
+
+```{r freq-plot-devices}
+library(ggplot2)
+
+# months
+df.ad.oct <- df.ad[as.Date(df.ad$test_date) >= as.Date('2014-10-01') & as.Date(df.ad$test_date) < as.Date('2014-11-01'),]
+df.ad.nov <- df.ad[as.Date(df.ad$test_date) >= as.Date('2014-11-01') & as.Date(df.ad$test_date) < as.Date('2014-12-01'),]
+df.ad.dec <- df.ad[as.Date(df.ad$test_date) >= as.Date('2014-12-01') & as.Date(df.ad$test_date) < as.Date('2015-01-01'),]
+
+# plot grid
+par(mfrow=c(3,1),mar=c(1,1,1,1),mai=c(0.1,1,0.1,0.1)) 
+
+tbl <- table(df.ad.oct$device_id)
+tbl <- sort(tbl[tbl>10]) # only keep > 10
+nms <- rep("",dim(tbl))
+barplot(tbl, names.arg = nms,main="October",ylab="Number of tests",xlab="Unique devices")
+tbl.oct <- tbl
+
+tbl <- table(df.ad.nov$device_id)
+tbl <- sort(tbl[tbl>10]) # only keep > 10
+nms <- rep("",dim(tbl))
+barplot(tbl, names.arg = nms,main="November",ylab="Number of tests",xlab="Unique devices")
+tbl.nov <- tbl
+
+tbl <- table(df.ad.dec$device_id)
+tbl <- sort(tbl[tbl>10]) # only keep > 10
+nms <- rep("",dim(tbl))
+barplot(tbl, names.arg = nms,main="December",ylab="Number of tests",xlab="Unique devices")
+tbl.dec <- tbl
+
+# max number of test to call a device suspicious
+max_susp_dev = 30
+```
+
+So we remove specific devices that test more then `r max_susp_dev` times a month. These devices are probably used by telecom professionals for testing purposes. A test on 4G cost up to 100 M Bytes per test out of the data bundle(depending on the exact speed of course!). So 30 or more tests per month are equivalent to 3GB of data just spend on tests alone, that is suspicious. The number 30 by itself is subjective, we could use 25 or 40 depending on what exact level of tests per device you would call suspicious.
+
+Actually including these are not influencing the results significantly, but we want to use real customer data as much as possible, not affected by professionals testing their own (or others) network.
+
+```{r get-clean-data}
+# read data from 4Gdb
+# Establish connection to PoststgreSQL using RPostgreSQL
+drv <- dbDriver("PostgreSQL")
+# Full version of connection setting
+con <- dbConnect(drv, dbname="4Gdb",host="localhost",port=5432,user="4Guser",password="4Gpassword" )
+
+# all data joined and cleaned for suspicious devices in SQL
+df.clnd <- dbReadTable(con, c("ookla_all_data_clean"))
+
+# get data for tm coverage area only
+df.4G <- dbReadTable(con, c("datatm4gcoverage"))
+
+# disconnect
+dbDisconnect(con)
+```
+
+After removing `r sum(tbl.oct>=max_susp_dev)` devices in October, `r sum(tbl.nov>=max_susp_dev)` devices in November and`r sum(tbl.dec>=max_susp_dev)` devices in December, which in total represents `r nrow(df.ad)-nrow(df.clnd)` speed tests, the data set has `r nrow(df.clnd)` speed test cases.
+
+Cleaning up the data
+-------------------
+When we loaded the raw data into the database we processed the data. in the data the names for the individual operators are spelled in various ways. Also we need to map connection types to the specific technology used depending on the operating system of the device. The SQL script to clean up the data maps duplicates or spelling issues for the telecom operator names, see for details the SQL scripts on GitHub. Also we do some transformations on the raw connection codes so we can identify technology used properly.
+
+Top three operators
+-------------------
+For this analysis we are only interested in the top three operators in the Netherlands. In the data set, at this point, there are `r length(levels(as.factor(df.clnd$operator)))` different operators identified. As we can see in the table below, most of the speed tests were performed by people using one of the three operators we are interested in. We will filter out all other operators and proceed with speed tests from these top three operators.
+
+```{r top-operators}
+top10 <- head(sort(table(df.clnd$operator),decreasing = TRUE),n=10)
+kable(as.data.frame(cbind(rownames(top10),top10),row.names = FALSE),col.names = c('Operator','Number of speedtests'),align=c("l","r"),caption="Most frequent operators")
+
+# filter on top three operators only
+ops <- c("T-Mobile NL","Vodafone NL","KPN NL")
+df.clnd.t3 <- df.clnd[df.clnd$operator %in% ops,]
+
+```
+
+The top three operators together are good for `r sum(tail(sort(table(df.clnd$operator)),n=3))` tests conducted all over the Netherlands in the test period.
+
+We keep only speed tests from the top three operators. This leaves `r nrow(df.clnd.t3)` cases in the data set.
+
+Focus on 4G technology
+----------------
+In the Ookla data the variable called 'connection_type' identifies which technology is used, this variable can be transformed into the network technology. Below we give an overview of the network technology types available in the data set.
+
+Ookla Connection type defines 4G as connection type 15 for Android. For iOS, connection type 12 is LTE, and for Windows connection type 11 is LTE.
+
+Definition of 4G for Android OS from the SQL script:
+
+```sql
+  Case  WHEN  CONNECTION_TYPE=0			THEN 'UNKNOWN'
+  	WHEN	CONNECTION_TYPE in (1,2)		THEN 'WIFI/CELL'
+  	WHEN	CONNECTION_TYPE in (3,4)		THEN '2G'
+  	WHEN	CONNECTION_TYPE=15			THEN '4G'
+  	WHEN	CONNECTION_TYPE between 5 and 17	THEN '3G'
+  	ELSE	'UNKNOWN'
+  END AS TECHNOLOGY
+```
+
+Type of technology used:
+```{r tech}
+library(knitr)
+tbl <- table(df.clnd.t3$technology)
+kable(as.data.frame(cbind(tbl,100*prop.table(tbl))),col.names = c('Number of cases','Percentage'), digits = 2, caption="Technology used in tests")
+```
+
+**In the remainder of this analysis we will focus on 4G technology.**
+
+Filtering on 4G technology leaves `r tbl["4G"]` test cases in the data set.
+
+Operating systems
+------------------
+For the top three operators we can look at the type of operating system used on these devices:
+
+```{r top3-table}
+library(knitr)
+tbl <- table(df.clnd.t3$os,df.clnd.t3$operator)
+# kable(as.data.frame(cbind(tbl,100*prop.table(tbl))),col.names = c('Number of cases','Percentage'), digits = 2,caption="Raw test data counts")
+kable(tbl)
+```
+
+Most of the tests were conducted on an Android OS closely followed by iOS. Windows Mobile devices have limited representation in the data set. In this test we are not interested in testing the difference in performance per device or operating system.
+
+Sample test data from Ookla
+--------------------------
+Ookla has some random sample data available, this data can be used to validate our method. To validate the test result one would need the specific data of the Netherlands.
+
+A sample set of files from Ookla of the data can be found [here](http://www.ookla.com/netmetrics).
+
+### Android header descriptives
+
+\footnotesize
+
+```{}
+test_id - unique id of test in our system
+device_id - unique device id in our system
+android_fingerprint
+test_date - YYYY-MM-DD HH:MM:SS in Pacific time (we can accommodate different time zones if needed)
+client_ip - ip of client
+download_kbps - download speed in kilobits per second
+upload_kbps - upload speed in kilobits per second
+latency_ms - ping in milliseconds
+server_name - name of server tested to (name of city it is located in)
+server_country - country name of server
+server_country_code - country code of server
+server_latitude - latitude of server tested to
+server_longitude - longitude of server tested to
+server_sponsor_name - sponsor name of server
+client_country - country name of the client
+client_country_code - country code of the client
+client_region - region name of client (this will be state in the US)
+client_region_code - region code of client
+client_city - city of client
+client_latitude - latitude of client (GPS or Maxmind when location services disabled)
+client_longitude - longitude of client (GPS or Maxmind when location services disabled)
+miles_between - miles between the client and the server tested to
+connection_type - http://developer.android.com/reference/android/telephony/TelephonyManager.html
+   0=unknown,1= Cell, 2=Wifi, 3=Gprs, 4=Edge, 5=Utms, 6=Cdma, 7=Evdo0, 8=EvdoA, 9=OnexRTT, 
+   10=Hsdpa, 11=Hspa, 12=Iden, 13=Ehrpd, 14=EvdoB, 15=Lte, 16=Hsupa, 17=Hspap
+isp_name  - name of ISP (Maxmind)
+is_isp    - 0=Corporation/Academic, 1=ISP
+network_operator_name - Mobile Carrier Name http://developer.android.com/reference/android
+   /telephony/TelephonyManager.html#getNetworkOperatorName()
+network_operator_code - MCC + MNC  http://developer.android.com/reference/android
+   /telephony/TelephonyManager.html#getNetworkOperator() 
+brand - http://developer.android.com/reference/android/os/Build.html#BRAND 
+device - http://developer.android.com/reference/android/os/Build.html#DEVICE 
+hardware - http://developer.android.com/reference/android/os/Build.html#HARDWARE 
+build_id - http://developer.android.com/reference/android/os/Build.html#ID 
+manufacturer - http://developer.android.com/reference/android/os/Build.html#MANUFACTURER 
+model - http://developer.android.com/reference/android/os/Build.html#MODEL 
+product - http://developer.android.com/reference/android/os/Build.html#PRODUCT  
+cdma_cell_id - http://developer.android.com/reference/android/telephony/cdma/package-summary.html 
+gsm_cell_id - http://developer.android.com/reference/android/telephony/gsm/package-summary.html 
+location_type - 0 = unknown, 1 = GPS, 2 = GeoIP
+sim_network_operator_name - Mobile Carrier Name from the SIM
+sim_network_operator_code - MCC + MNC from the SIM  http://en.wikipedia.org/wiki/Mobile_Country_Code 
+```
+\normalsize
+
+### iOS header descriptives
+
+\footnotesize
+
+```{ }
+test_id - unique id of test in our system
+device_id - unique device id in our system
+test_date - YYYY-MM-DD HH:MM:SS in Pacific time (we can accommodate different time zones if needed)
+client_ip - ip of client 
+download_kbps - download speed in kilobits per second
+upload_kbps - upload speed in kilobits per second
+latency_ms - ping in milliseconds
+server_name - name of server tested to (name of city it is located in)
+server_country - country name of server
+server_country_code - country code of server
+server_latitude - latitude of server tested to
+server_longitude - longitude of server tested to
+server_sponsor_name - sponsor name of server
+client_country - country name of the client
+client_country_code - country code of the client
+client_region - region name of client (this will be state in the US)
+client_region_code - region code of client
+client_city - city of client
+client_latitude - latitude of client (GPS or Maxmind when location services disabled)
+client_longitude - longitude of client (GPS or Maxmind when location services disabled)
+miles_between - miles between the client and the server tested to
+connection_type - 0=unknown, 1=cell, 2=wifi, 3=GPRS, 4=Edge, 5=WCDMA, 6=HSDPA, 
+   7=HSUPA, 8=CDMA1x, 9=CDMAEVDORev0, 10=CDMAEVDORevB, 11=eHRPD, 12=LTE 
+isp_name  - name of ISP (Maxmind) 
+is_isp    - 0=Corporation/Academic, 1=ISP
+carrier_name - http://developer.apple.com/library/ios/documentation/NetworkingInternet
+   /Reference/CTCarrier/Reference/Reference.html#//apple_ref/occ/instp/CTCarrier/carrierName 
+iso_country_code - http://developer.apple.com/library/ios/documentation/NetworkingInternet
+   /Reference/CTCarrier/Reference/Reference.html#//apple_ref/occ/instp/CTCarrier/isoCountryCode 
+mobile_country_code - http://developer.apple.com/library/ios/documentation/NetworkingInternet
+   /Reference/CTCarrier/Reference/Reference.html#//apple_ref/occ/instp/CTCarrier/mobileCountryCode 
+mobile_network_code - http://developer.apple.com/library/ios/documentation/NetworkingInternet
+   /Reference/CTCarrier/Reference/Reference.html#//apple_ref/occ/instp/CTCarrier/mobileNetworkCode
+model - iPad, iPhone, iPod Touch 
+version - iOS version
+location_type - 0 = unknown, 1 = GPS, 2 = GeoIP
+```
+\normalsize
+
+### Windows Mobile header descriptives
+
+\footnotesize
+
+```{}
+test_id - unique id of test in our system
+device_id - unique device id in our system
+test_date - YYYY-MM-DD HH:MM:SS in Pacific time (we can accommodate different timezones if needed)
+client_ip - ip of client 
+download_kbps - download speed in kilobits per second
+upload_kbps - upload speed in kilobits per second
+latency_ms - ping in milliseconds
+server_name - name of server tested to (name of city it is located in)
+server_country - country name of server
+server_country_code - country code of server
+server_latitude - latitude of server tested to
+server_longitude - longitude of server tested to
+server_sponsor_name - sponsor name of server
+client_country - country name of the client
+client_country_code - country code of the client
+client_region - region name of client (this will be state in the US)
+client_region_code - region code of client
+client_city - city of client
+client_latitude - latitude of client (GPS or Maxmind when location services disabled)
+client_longitude - longitude of client (GPS or Maxmind when location services disabled)
+miles_between - miles between the client and the server tested to
+connection_type - 0=unknown, 1=cell, 2=wifi, 3=GPRS, 4=1XRTT, 5=EVDO, 6=EDGE, 7=3G, 
+   8=HSPA, 9=EVDV, 10=PassThru, 11=LTE, 12=EHRPD
+isp_name  - name of ISP (Maxmind) 
+is_isp    - 0=Corporation/Academic, 1=ISP
+carrier_name - AT&T, Verizon etc 
+manufacturer - Nokia, HTC, etc.
+device_name - name of the device for e.g. "HD7 T9292" 
+hardware_version - device hardware version e.g. "1.0.0.0"
+firmware_version - device firmware_version e.g. "1232.2107.1241.1001"
+location_type - 0 = unknown, 1 = GPS, 2 = GeoIP
+
+```
+
+\normalsize
+
+Geographical area
+------------------
+For this test to be fair to all three operators, we limit the comparison of the test to areas in which all operators claim to have 4G coverages at the time of the measurements. The 4G network is constantly improved and extended, every month the area T-Mobile has 4G coverage is extended. This means that some areas only got 4G coverage during the time period of the test. 
+
+### Mapping test coordiantes to city boundaries
+To identify the exact area we will use for this analysis we use data from CBS, CBS is the Central Bureau for Statistics in the Netherlands. They provide [publicly available](http://www.cbs.nl/nl-NL/menu/themas/dossiers/nederland-regionaal/publicaties/geografische-data/archief/2014/2013-wijk-en-buurtkaart-art.htm) data on cities in the Netherlands. Based on these geographical city boundaries we map each latitude, longitude coordinate onto a city.
+
+From T-Mobile we received a list of cities that, at the time of testing,  have 4G coverage. From the data we can see that per city each provider has sufficient number of speed tests in the data set for the tests to be representative. 
+
+Online we can get an up to date overview of network coverage for all three operators (see [here](http://www.4gdekking.nl/)).
+
+This test is not about coverage but about speed of the network. 
+
+T-Mobile has the least 4G coverage of the three and per end of 2014 has actual coverage in the following area:
+
+```{r area }
+library(png)
+library(grid)
+img <- readPNG("./img/tmobile4gcoverage.png")
+grid.raster(img)
+
+```
+
+For this area the following number of tests are available in the data set.
+```{r}
+tbl <- table(df.4G$operator)
+kable(as.data.frame(cbind(tbl,100*prop.table(tbl))),col.names = c('count','percentage'), digits = 2,caption="Number of 4G speedtests in coverage area")
+
+```
+
+Areas that only had 4G coverage from November 2014 on-wards are: Apeldoorn, Voorst, Dinkelland, Enschede, Losser, Oldenzaal. 
+Areas that were hooked up in December are : Eijsden, Maastricht, Margraten, Bedum, Groningen, Haren, Hoogezand-sappemeer, Leek, Loppersum, Noordenveld, Slochteren, Ten Boer, Tynaarlo
+
+All other cities in the area had 4G coverage on or before 1 October 2014.
+
+The data set for this area contains `r nrow(df.4G)` speed tests.
+
+### Suspicious speeds
+
+In the data we check for up and download speeds that are technically impossible.
+*Download speeds* for 4G are limited to 150Mbps on the T-mobile technology.
+
+KPN and Vodafone have a technology called LTE advanced which has a maximum download speed of 225Mbps.
+
+Any speed tests that had a speed recorded above this technical maximum was removed from the data set.
+ 
+```{r susp-down-speed}
+# count number of cases that exceed theoretical max speed
+n.max.tm <- nrow(subset(df.4G, download_kbps>150000 & operator == "T-Mobile NL"))
+n.max.vf <- nrow(subset(df.4G, download_kbps>225000 & operator == "Vodafone NL"))
+n.max.kpn <-nrow(subset(df.4G, download_kbps>225000 & operator == "KPN NL"))
+
+# create filters 
+rw.fltr.1 <- rownames(subset(df.4G, download_kbps>150000 & operator == "T-Mobile NL"))
+rw.fltr.2 <- rownames(subset(df.4G, download_kbps>225000 & operator == "Vodafone NL"))
+rw.fltr.3 <- rownames(subset(df.4G, download_kbps>225000 & operator == "KPN NL"))
+
+# filter out these extremes
+df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.1),]
+df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.2),]
+df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.3),]
+
+```
+
+So we remove suspicious measurements in which the **download** speed exceeded the maximum theoretical speed per individual operator. 
+
+For T-Mobile we removed `r n.max.tm` cases, for Vodafone we removed `r n.max.vf` cases and for KPN we removed `r n.max.kpn` cases.
+
+After removing these suspicious measurements the data set contains `r nrow(df.4G)` speed tests at this point.
+
+Let's do the same for *upload speed*.
+
+The maximum theoretical upload speed is for all operators the same: max 50Mbps.
+
+```{r susp-upload-speed}
+# create filters 
+rw.fltr.4 <- rownames(subset(df.4G, upload_kbps>50000 & operator == "T-Mobile NL"))
+rw.fltr.5 <-rownames(subset(df.4G, upload_kbps>50000 & operator == "Vodafone NL"))
+rw.fltr.6 <-rownames(subset(df.4G, upload_kbps>50000 & operator == "KPN NL"))
+
+# filter out these extremes
+df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.4),]
+df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.5),]
+df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.6),]
+
+```
+
+So again we remove suspicious measurements in which the **upload** speed exceeded the maximum theoretical speed per individual operator. For T-Mobile we removed `r length(rw.fltr.4)` cases, for Vodafone we removed `r length(rw.fltr.5)` cases and for KPN we removed `r length(rw.fltr.6)` cases.
+
+After removing these suspicious measurements the data set contains `r nrow(df.4G)` speed tests at this point.
+
+### Suspicious coordinates
+
+Are there any locations, or coordinates, that occur very often in the investigated area?
+If we join the coordinates latitude and longitude together and look at the most frequent occurrences we see that there are indeed some coordinates that are very frequent. How do these exact same coordinates end up in the data? To understand this we need to explain a bit more on how the Ookla Speed test application gets the coordinates from a mobile device. 
+There are several scenario's that can be the case: 
+1)The customer has approved the application access to the GPS coordinates of his/her device.
+2)For some reason the app cannot read the GPS coordinates from the device at the time of the test. This reason can be of different origins, the user has blocked access or we are in a building or there are other technical reasons why the exact GPS coordinates cannot be accessed.
+
+Whenever the exact coordinates are not available, due to measurement issues or because the customer is not allowing the application to use the GPS coordinates Ookla uses GEO-IP. GEO-IP is a online service to estimate the physical location of an ip-internet address (more online [from maxmind](https://www.maxmind.com/en/geoip2-services-and-databases) ).
+
+```{r susp-coord}
+
+# combine coordinates in "lat-lon" 
+str.coord <- paste(df.4G$client_latitude,",",df.4G$client_longitude)
+
+# top 10 most frequent locations
+tbl <- head(sort(table(str.coord),decreasing = TRUE),n=15)
+nms <- names(tbl)
+df.tmp <- as.data.frame(cbind(nms,tbl))
+names(df.tmp) <- c("Coordinates","Count")
+kable(df.tmp, row.names = FALSE,align=c("l","r"))
+
+coord <- names(sort(table(str.coord),decreasing = TRUE)[1])
+n.test.at.coord <- sort(table(str.coord),decreasing = TRUE)[1]
+
+```
+
+To understand more on how GEO-IP works we asked some specific questions to Ookla on these issues.
+
+Coordinate (52.5-5.75) : Response from Ookla: *"The IP addresses associated with these tests show up as in the Netherlands, but that's specific as it gets regarding GEO-IP. Were assuming that 52.5, 5.75 is the Dutch equivalent of the middle of Kansas (in the US if GEO-IP Cannot be determined it defaults to the center of the US which in our case is Kansas). All it knows is it's in the Netherlands, so GeoIP specifies the center of the country."*
+
+Coordinates (52.3667-4.9) and (52.35-4.9167) are both in Amsterdam, but in one case the latitude is with less precision and in the other the longitude. Question to Ookla: Can we still assume the measurements are from Amsterdam? 
+Response Ookla: *Yes, GeoIP is used here. We can assume you are in Amsterdam but like any other GeoIP location result, the confidence level isn't as high as it would be if we were able to get location information directly from the device, meaning if we were able to obtain GPS instead of GEO-IP.* 
+
+Coordinate (51.9167-4.5) is in Rotterdam. Again with limited precision, same response as above from Ookla.
+
+Coordinate (52.0666-4.3209) is in The Hague. All cases are tests with operator equal to "T-Mobile NL" also this location is close to the T-Mobile office in The Hague. We will exclude these tests as potentially being from T-Mobile employees.
+
+Also see the [precision of the coordinates](https://en.wikipedia.org/wiki/Decimal_degrees) denotes the fact that we are unsure about the exact location.
+
+**So what do we do with these suspicious coordinates?**
+In the top location, which has coordinates (`r coord`) and is in the city Dronten. We have `r n.test.at.coord` speed tests with this coordinate alone. We will analyse this set the same way we analyse individual cities.
+
+```{r default-location}
+# filter unkown location
+df.unkwnloc <- df.4G[paste(df.4G$client_latitude,",",df.4G$client_longitude)==coord,]
+
+# filter 52.0666-4.3209
+coord <- "52.0666 , 4.3209"
+df.dh <- df.4G[paste(df.4G$client_latitude,",",df.4G$client_longitude)==coord,]
+
+# filter unkown location from 4G as we want only known locations
+df.4G <- df.4G[setdiff(rownames(df.4G),rownames(df.dh)),]
+
+# replace Dronten with UNKNOWN
+df.unkwnloc$gm_naam <- "Unkown Location"
+
+# filter unkown location from 4G as we want only known locations
+df.4G <- df.4G[setdiff(rownames(df.4G),rownames(df.unkwnloc)),]
+
+```
+
+**T-Mobile head office**
+We removed `r nrow(df.dh)` tests from coordinates "52.0666 , 4.3209" in The Hague. As they are close to the head-office of T-Mobile and indeed all tests from this location are done from a T-Mobile network.
+
+The other locations (to be precise all but these two: "52.5 , 5.75" and "52.0666 , 4.3209")  have been explained above and there is no knowledge at this point that leads to exclusion, so these tests remain in the data set.
+
+After removing these suspicious measurements based on frequent coordinates the data set contains `r nrow(df.4G)` speed tests at this point.
+
+### Suspicious dates or times
+We count the number of tests per day for the months October, November and December. Again we are looking at  any suspicious peaks in the data?
+```{r timestamps, fig.align='center',fig.width=8}
+library(ggplot2)
+library(reshape2)
+
+#Timeseries
+counts <- table(df.4G$operator, df.4G$test_date)
+
+# barplot(counts,
+#   xlab="Dates", col=c("green","magenta","red"))
+# legend("topright", 
+#        legend = rownames(counts), 
+#        fill = c("green","magenta","red"), 
+#        cex = 0.5)
+
+df.cnts <- as.data.frame(counts)
+names(df.cnts) <- c("operator","date","freq")
+
+# Faceting is a good alternative:
+ggplot(df.cnts, aes(x=date,y=freq)) + geom_bar(width=.5,stat="identity") +
+  facet_wrap(~ operator, nrow = 3) +
+  theme(axis.text.x  = element_text(angle=90, vjust=0.5, size=6))
+
+```
+
+We know that on 6 October T-Mobile introduced new improved speeds for all customers on the "Stel Samen"" rate-plans. This lead to increased number of tests. Also Vodafone allowed 2 days of free data usages for Christmas(25/26th of December). We find no disturbing or unknown peaks on a specific date. 
+
+```{r}
+# table
+tbl <- addmargins(table(df.4G$operator, format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%B")))
+kable(tbl,caption="Counts per operator per month")
+
+```
+
+Above a count per month per operator.
+
+### Ookla Speedtest itself
+Ookla designed their speed test in such a way that the results are as robust as possible, so they deliver a reproducible speed metric. Please read more on the design decisions Ookla made to be able to deliver a robust and stable metric for speed test over http [here](https://support.speedtest.net/hc/en-us/articles/203845400-How-does-the-test-itself-work-How-is-the-result-calculated-).
+
+\newpage
+
+Speed test
+=============
+So we have analysed the data and looked for anomalies in the data. If found, we have corrected them. Finally we are ready to compare speed test data between the three major telecom operators in Netherlands in the above defined coverage area. 
+
+We  will analyse three different metrics:
+
+* Download speed
+* Upload speed
+* Latency
+
+There is no useful way to aggregate these individual metrics into one overall ‘speed aggregated score’. Most customers are interested in download speeds, because it affects the most of their experience (browsing,streaming,downloading etc).  Most network speed comparisons only focus on download speed. However, since upload speed is also important for posting video’s and photos on social media, and ping times are important for gaming and fast opening of websites these metrics are also analyzed.
+
+So how are the different metrics distributed?
+
+Histogram distributions
+----------------------
+A histogram is a graphical representation of the distribution of data. It is an estimate of the probability distribution of a continuous variable (quantitative variable), [more](https://en.wikipedia.org/wiki/Histogram) about histograms on Wikipedia.
+
+### Download speed
+
+In the histogram below we see download speed in KBps on the horizontal axis. The number of test cases are plotted as bars, on the vertical axis w see the count of the number of speed tests in a specific range.
+
+```{r downloadspeed, fig.cap='Histogram download speed per operator', fig.height=3, fig.pos='H' }
+library(plyr)
+cdf <- ddply(df.4G, "operator", summarise, download_kbps.mean=mean(download_kbps))
+
+# With mean lines, using cdf from above
+ggplot(df.4G, aes(x=download_kbps)) + geom_histogram( colour="black", fill="white") + 
+    facet_grid(operator ~ .) +
+    geom_vline(data=cdf, aes(xintercept=download_kbps.mean),
+               linetype="solid", size=1, colour="red")
+
+```
+
+
+### Upload speed
+
+In the histogram below we see upload speed in KBps on the horizontal axis. The number of test cases are plotted as bars, on the vertical axis w see the count of the number of speed tests in a specific range.
+
+```{r uploadspeed, fig.cap='Histogram upload speed per operator', fig.height=3 }
+library(plyr)
+cdf <- ddply(df.4G, "operator", summarise, upload_kbps.mean=mean(upload_kbps))
+
+# With mean lines, using cdf from above
+ggplot(df.4G, aes(x=upload_kbps)) + geom_histogram( colour="black", fill="white") + 
+    facet_grid(operator ~ .) +
+    geom_vline(data=cdf, aes(xintercept=upload_kbps.mean),
+               linetype="solid", size=1, colour="red")
+
+```
+
+### Latency
+
+In the histogram below we see log(latency) speed on the horizontal axis. The log transformation makes the figure more readable. For the reader, the horizontal axis shows powers of 10. So 2 actually means 10^{2}=100 and 5 actually stands for 10^{5}=10.000 . The number of test cases are plotted as bars, on the vertical axis we see the count of the number of speed tests in a specific range. For latency we take the log so the outlines scale and we can have a look at the shape of the distribution.
+
+```{r latency, fig.cap='Histogram latency per operator', fig.height=3 }
+library(plyr)
+cdf <- ddply(df.4G, "operator", summarise, latency.mean=mean(log(latency)))
+
+# With mean lines, using cdf from above
+ggplot(df.4G, aes(x=log(latency))) + geom_histogram( colour="black", fill="white") + 
+    facet_grid(operator ~ .) #+
+#     geom_vline(data=cdf, aes(xintercept=log(latency.mean)),
+#                linetype="dashed", size=1, colour="red")
+
+```
+
+Box-plot
+---------
+In descriptive statistics, a box plot or box-plot is a convenient way of graphically depicting groups of numerical data through their quartiles. Box plots may also have lines extending vertically from the boxes (whiskers) indicating variability outside the upper and lower quartiles, hence the terms box-and-whisker plot and box-and-whisker diagram. Outliers may be plotted as individual points. [More](https://en.wikipedia.org/wiki/Box_plot) about box-plots on Wikipedia.
+
+### Download speed
+
+```{r box-down, fig.cap='Boxplot download speed per operator'}
+# boxplot
+ggplot(df.4G, aes(x=operator, y=download_kbps, fill=operator)) + geom_boxplot() +
+    guides(fill=FALSE) + stat_summary(fun.y=mean, geom="point", shape=5, size=4)
+
+```
+
+### Upload speed
+
+```{r box-up, fig.cap='Boxplot upload speed per operator'}
+# boxplot
+ggplot(df.4G, aes(x=operator, y=upload_kbps, fill=operator)) + geom_boxplot() +
+    guides(fill=FALSE) + stat_summary(fun.y=mean, geom="point", shape=5, size=4)
+
+```
+
+### Latency
+For latency ( or ping) we take the log so the outliers scale and we can have a look at the shape of the distribution.
+```{r box-latency, fig.cap='Boxplot latency speed per operator'}
+# boxplot
+ggplot(df.4G, aes(x=operator, y=log(latency), fill=operator)) + geom_boxplot() +
+    guides(fill=FALSE) + stat_summary(fun.y=mean, geom="point", shape=5, size=4)
+
+```
+
+Test design
+-----------
+What we want to test is if, on average, a customer that uses a specific operator gets a higher speed then using another operator, with all else equal. To do this we have collected thousands of test results from the three top operators. Now we want to compare each operator with the other two operators. So we do three tests, in each test we comparing one operator with another operator. In each test we compare two sets of tests. These sets are also called samples (from the Dutch population of mobile phone users) from which we calculate the sample means. Now our statistical test tests if these sample means are significantly different from one another.
+
+In practice, the Central Limit Theorem assures us that, under a wide range of assumptions, the distributions of the two sample means being tested will themselves approach Normal distributions as the sample sizes get large, regardless (this is where the assumptions come in) of the distributions of the underlying data. As a consequence, as the sample size gets larger, the difference of the means becomes normally distributed, and the requirements necessary for the t-statistic of an unpaired t-test to have the nominal t distribution become satisfied (More on [significance](https://en.wikipedia.org/wiki/Statistical_significance) ).
+
+Which statistical test do we need?
+-----------
+What we have here is a set of unpaired, independent, different sample size, different variance data. So we need a [Welch t-test](https://en.wikipedia.org/wiki/Welch%27s_t_test).
+
+Significance
+-----------
+So when is a test significant? And if so at what level? And furthermore can we qualify such a significant result as good or bad? To start with the last remark, all qualifications of a statistical result are subjective. To explain this in more detail, let's consider the following scenario's. The first one: would you take a plane if the operator assures you that they have significantly proven they do not crash? Your next question will probably be, at what significance level did you take this conclusion? Their answer: With 95% confidence we can assure you we will not crash. I guess you would not hop on right? So significance is always relative, loosing your suitcase on a flight is not as bad as losing your life. One way of looking at 95% confidence is that 1 out of 20 trials (in 5% of the cases) you make a so called Type 1 error, in which you wrongly reject the null-hypothesis. So in this case, if the p-value would be 0.05 you would claim that operator x is faster then operator y while in fact they were not. In our test result we see that our p-values are very much smaller then 0.05, so changes of making this type of error are also considerably smaller then the claimed confidence. 
+
+### P-value
+In statistics, the p-value is a function of the observed sample results (a statistic) that is used for testing a statistical hypothesis. Before performing the test a threshold value is chosen, called the significance level of the test, traditionally 5% or 1% [1] and denoted as $\alpha$. If the p-value is equal or smaller than the significance level ($\alpha$), it suggests that the observed data is inconsistent with the assumption that the null hypothesis is true, and thus that hypothesis must be rejected and the alternative hypothesis is accepted as true ( see [wikipedia](https://en.wikipedia.org/wiki/P-value)).
+
+```{r set-confidence-level}
+conflevel <- 0.99
+```
+
+### Type I Error
+The $\alpha$ or confidence level is the probability of rejecting the null hypothesis given that it is true (type I error) and is most often set at 0.05 (5%). In this test we use a confidence level $\alpha$ of 0.01 99%.
+
+\newpage
+
+Test results
+===========
+We test each operator against the other two operators so we have three tests. We put the confidence level to `r 100*conflevel` %. Our null-hypothesis is that the means are drawn from the same sample, so they are not different.
+
+Let see what our test results are:
+
+```{r absolute-test-result, cache=FALSE, results='asis'}
+library(xtable)
+
+# do test result use sourced function
+df.tr.dwnload <- fn.ttest(df.4G,"download_kbps",conflevel)
+df.tr.upload <- fn.ttest(df.4G,"upload_kbps",conflevel)
+df.tr.latency <- fn.ttest(df.4G,"latency",conflevel)
+
+# print test result 
+print(xtable(df.tr.dwnload,format = "pandoc" ,  caption = "Comparison of means for metric: download(kbps)",row.names=FALSE, booktabs=TRUE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
+print(xtable(df.tr.upload,format = "pandoc" ,  caption = "Comparison of means for metric: upload(kbps)",row.names=FALSE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
+print(xtable(df.tr.latency,format = "pandoc",  caption = "Comparison of means for metric: latency(ms)",row.names=FALSE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
+
+
+```
+
+```{r relative conslusions}
+# sometimes R is a bit cumbersome...
+m1 <- as.numeric(as.character(df.tr.dwnload["T-Mobile vs KPN","Abs(Kbps)"]))
+r1 <- as.numeric(as.character(df.tr.dwnload["T-Mobile vs KPN","Rel(%)"]))
+l1 <- min(as.numeric(as.character(df.tr.dwnload["T-Mobile vs KPN","Mean 1"])),as.numeric(as.character(df.tr.dwnload["T-Mobile vs KPN","Mean 2"])))
+
+```
+
+**Explanation of terms**
+
+\footnotesize
+
+**Sample 1** : Number of speed test samples for operator 1.
+
+**Sample 2** : Number of speed test samples for operator 2.
+
+**Mean 1** : Average speed of speed tests for operator 1 in KBps. A Higher number here means that this operator has a fast download(or upload) speed. For the latency a higher number means you have to wait longer contact webpages.
+
+**Mean 2** : Average speed of speed tests for operator 2 in KBps. A Higher number here means that this operator has a fast download(or upload) speed. For the latency a higher number means you have to wait longer contact webpages.
+
+**P-value** : The test statistic, for more explanation see the paragraph P-Value above
+
+**Sign.** : Short for Significance. We compare the test statistic with the predefined confidence level(`r conflevel`). 'Yes' means the test is significant, 'No' means the test is not significant."))
+
+**Diff of Means** : Difference of the means (DoM) is the difference of Mean 1 and Mean 2(Mean 1 - Mean 2). A big positive number here means operator 1 has a faster speed then operator 2. A big negative number means that operator 2 has a faster speed then operator 1. The number after the 'x/-' signs denotes the confidence bounds we get from the test, a big number here means we are not very sure about the DoM a small number means we are very sure.
+
+**Abs(Kbps)** : Absolute minimal difference in speed. We compare the average speed of the two operators, this difference is calculated and based on the confidence bounds we get at least a minimum difference equal to this number. A bigger number means there is a bigger difference in the metric of both operators.")
+
+**Rel(%)** : Relative difference in percentage. It is calculated as the minimum absolute difference divided by the slower of the two operators average speed.
+
+\normalsize
+
+Looking at the tables above we see that all results are significant and the P-values are very small. This means we can reject the null-hypothesis with great confidence. Hence we can state that the differences in the mean are significant.
+
+When we look at the lower bound of the confidence interval of the difference in the mean. We can say with `r 100*conflevel`% certainty that in the investigated area the 4G network of T-Mobile outperforms KPN by at least `r round(m1/1000,2)` Mbps, which is at least `r r1 ` % faster.
+
+Similar statements can be derived from the result tables per individual city below. Remark: Most, but not all tests at the city level are significant.
+
+Conclusion
+----------
+This analysis has been conducted with the utmost care and to the best knowledge of the analyst. The analysis is opensource and all code can be downloaded, reviewed and repeated from [GitHub](https://github.com/hugokoopmans/ookla-speedtest-analysis).
+
+Overall the tests performed give a significant result. Per city some tests were not significant.
+
+\newpage
+
+Top 20 cities 
+=============
+From CBS we have the following top 20 cities based on number of inhabitants("aantal inwoners"). 
+
+
+```{r gettop20}
+
+# postgreSQL
+require("RPostgreSQL", lib.loc="~/R/x86_64-pc-linux-gnu-library/3.0")
+
+# Establish connection to PoststgreSQL using RPostgreSQL
+drv <- dbDriver("PostgreSQL")
+
+# Full version of connection setting
+con <- dbConnect(drv, dbname="4Gdb",host="localhost",port=5432,user="4Guser",password="4Gpassword" )
+
+# all data joined on top 20 gemeentes
+res <- dbSendQuery(con, "SELECT gm_code,gm_naam,aantal_inwoners from top20layer")
+
+df.top20 <- fetch(res, n = -1)
+
+# disconnect
+dbDisconnect(con)
+
+# print table
+kable(df.top20)
+
+# Add unknown as seperate "gemeente"
+df.top20.plus.unknown <- rbind(df.top20, c("---","Unkown Location", nrow(df.unkwnloc)))
+
+# add data of unknown to df
+df.4G.plus.hotspots <- rbind(df.4G,df.unkwnloc)
+
+```
+
+In this test we use the CBS cities in this area as the benchmark area for the overall comparison.
+
+In more detailed analysis we investigate the top twenty "Gemeentes" based on number of inhabitants. based on data available at [CBS](http://www.cbs.nl/nl-NL/menu/themas/dossiers/nederland-regionaal/publicaties/geografische-data/archief/2014/2013-wijk-en-buurtkaart-art.htm).
+
+The coverage area of top 20 cities looks like this.
+
+```{r top20, echo=FALSE}
+library(png)
+library(grid)
+img <- readPNG("./img/top20gemeentes.png")
+ grid.raster(img)
+```
+
+From the CBS data we learn that the top 20 cities covers 4855450 out of 16779185 inhabitants. Which is `r round(100*4855450/16779185,2)` %. in terms of area this is 2412 km^2 of a total of 41545 km^2, which is `r round(100*2412/41545,2)` %. 
+
+For each city we will do the significance test separately in the next pages.
+
+```{r run-analysis-per-gemeente, comment='', echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE, results='asis'}
+# run the analysis for each gemeente in the df.top20
+out = NULL
+for (i in  1:nrow(df.top20.plus.unknown)) {
+#  out = c(out, knit_expand('analysis-per-gemeente.Rmd'))
+  out = c(out, knit_child('analysis-per-gemeente.Rmd'))
+}
+
+cat(paste(out, collapse = '\n'))
+#cat(knit(text=unlist(paste(out, collapse = '\n')), quiet=TRUE))
+
+```
+
+
+
+
+
