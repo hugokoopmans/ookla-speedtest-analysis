@@ -11,20 +11,20 @@ The table shows the speed test analysis for gemeente `r df.top20.plus.unknown$gm
 df.tmp <- subset(df.4G.plus.hotspots,gm_naam == df.top20.plus.unknown$gm_naam[i])
 
 # do test result use sourced function
-df.tr.dwmload <- fn.ttest(df.tmp,"download_kbps",conflevel)
-df.tr.upload <- fn.ttest(df.tmp,"upload_kbps",conflevel)
-df.tr.latency <- fn.ttest(df.tmp,"latency",conflevel)
+df.tr.dwnload.g <- fn.ttest(df.tmp,"download_kbps",conflevel)
+df.tr.upload.g <- fn.ttest(df.tmp,"upload_kbps",conflevel)
+df.tr.latency.g <- fn.ttest(df.tmp,"latency",conflevel)
 
 # print test result 
-print(xtable(df.tr.dwnload,format = "pandoc" ,  caption = "Comparison of means for metric: download(kbps)",row.names=FALSE, booktabs=TRUE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
-print(xtable(df.tr.upload,format = "pandoc" ,  caption = "Comparison of means for metric: upload(kbps)",row.names=FALSE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
-print(xtable(df.tr.latency,format = "pandoc",  caption = "Comparison of means for metric: latency(ms)",row.names=FALSE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
+print(xtable(df.tr.dwnload.g,format = "pandoc" ,  caption = "Comparison of means for metric: download(kbps)",row.names=FALSE, booktabs=TRUE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
+print(xtable(df.tr.upload.g,format = "pandoc" ,  caption = "Comparison of means for metric: upload(kbps)",row.names=FALSE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
+print(xtable(df.tr.latency.g,format = "pandoc",  caption = "Comparison of means for metric: latency(ms)",row.names=FALSE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
 
 ```
 
 
 
-Please note the column "Significant", if this column states "No" the test is not significant at the `r 100*conflevel`% confidence level. This means there is no significant difference in means observed so the NULL Hypothesis can not be rejected. In layman's terms: You can *not conclude* that one operator has a faster 4G network then the other.
+Please note the column [Sign.] or "Significant", if this column states "No" the test is not significant at the `r 100*conflevel`% confidence level. This means there is no significant difference in means observed so the NULL Hypothesis can not be rejected. In layman's terms: You can *not conclude* that one operator has a faster 4G network then the other.
 
 **Explanation of terms**
 
@@ -42,10 +42,10 @@ Please note the column "Significant", if this column states "No" the test is not
 
 **Sign.** : Short for Significance. We compare the test statistic with the predefined confidence level(`r conflevel`). 'Yes' means the test is significant, 'No' means the test is not significant."))
 
-**Diff of Means** : Difference of the means (DoM) is the difference of Mean 1 and Mean 2(Mean 1 - Mean 2). A big positive number here means operator 1 has a faster speed then operator 2. A big negative number means that operator 2 has a faster speed then operator 1. The number after the 'x/-' signs denotes the confidence bounds we get from the test, a big number here means we are not very sure about the DoM a small number means we are very sure.
+**Diff(Kbps)** : Difference of the means (DoM) is the difference of Mean 1 and Mean 2(Mean 1 - Mean 2). A big positive number here means operator 1 has a faster speed then operator 2. A big negative number means that operator 2 has a faster speed then operator 1. 
 
-**Abs(Kbps)** : Absolute minimal difference in speed. We compare the average speed of the two operators, this difference is calculated and based on the confidence bounds we get at least a minimum difference equal to this number. A bigger number means there is a bigger difference in the metric of both operators.")
+**Conf Int** : Confidence interval consist of a range of values (interval) that act as good estimate of the *true* difference of the mean. We are `r 100*conflevel`% confident that the true value of the difference of the mean is in our confidence interval.
 
-**Rel(%)** : Relative difference in percentage. It is calculated as the minimum absolute difference divided by the slower of the two operatorsaverage speed.
+**Rel(%)** : Relative difference in percentage. It is calculated as the difference of the means divided by the slower of the two operators average speed.
 
 \normalsize
