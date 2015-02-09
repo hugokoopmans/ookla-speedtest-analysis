@@ -80,7 +80,7 @@ All scripts to process the data are in SQL(available on GitHub) or R(included in
 
 # set global chunk options 
 library(knitr)
-opts_chunk$set(echo=FALSE, cache=TRUE, tidy=TRUE, warning=FALSE, message=FALSE, error=TRUE)
+opts_chunk$set(echo=FALSE, cache=FALSE, tidy=TRUE, warning=FALSE, message=FALSE, error=TRUE)
 
 # load functions
 source("statistical-analysis.R")
@@ -125,6 +125,153 @@ kable(as.data.frame(tbl),col.names = c('','Counts'), caption="Raw test data coun
 ```
 
 So we start this analysis with in total `r nrow(df.ad)` speed tests, which are represented as rows in the data set commercially downloaded from Ookla.
+
+Ookla Speedtest data
+----------------
+Ookla designed their speed test in such a way that the results are as robust as possible, so they deliver a reproducible speed metric. Ookla’s speedtest.net is the de-facto standard for internet speed testing. According to http://www.ookla.com/netmetrics, NetMetrics is the choice of nearly every Fortune 500 ISP and Mobile Provider in the world. Please read more on the design decisions Ookla made to be able to deliver a robust and stable metric for speed test over http [here](https://support.speedtest.net/hc/en-us/articles/203845400-How-does-the-test-itself-work-How-is-the-result-calculated-).
+
+Sample test data from Ookla
+--------------------------
+Ookla has some random sample data available, this data can be used to validate our method. To validate the test result one would need the specific data of the Netherlands.
+
+A sample set of files from Ookla of the data can be found [here](http://www.ookla.com/netmetrics).
+
+### Android header descriptives
+
+\footnotesize
+
+```{}
+test_id - unique id of test in our system
+device_id - unique device id in our system
+android_fingerprint
+test_date - YYYY-MM-DD HH:MM:SS in Pacific time (we can accommodate different time zones if needed)
+client_ip - ip of client
+download_kbps - download speed in kilobits per second
+upload_kbps - upload speed in kilobits per second
+latency_ms - ping in milliseconds
+server_name - name of server tested to (name of city it is located in)
+server_country - country name of server
+server_country_code - country code of server
+server_latitude - latitude of server tested to
+server_longitude - longitude of server tested to
+server_sponsor_name - sponsor name of server
+client_country - country name of the client
+client_country_code - country code of the client
+client_region - region name of client (this will be state in the US)
+client_region_code - region code of client
+client_city - city of client
+client_latitude - latitude of client (GPS or Maxmind when location services disabled)
+client_longitude - longitude of client (GPS or Maxmind when location services disabled)
+miles_between - miles between the client and the server tested to
+connection_type - http://developer.android.com/reference/android/telephony/TelephonyManager.html
+   0=unknown,1= Cell, 2=Wifi, 3=Gprs, 4=Edge, 5=Utms, 6=Cdma, 7=Evdo0, 8=EvdoA, 9=OnexRTT, 
+   10=Hsdpa, 11=Hspa, 12=Iden, 13=Ehrpd, 14=EvdoB, 15=Lte, 16=Hsupa, 17=Hspap
+isp_name  - name of ISP (Maxmind)
+is_isp    - 0=Corporation/Academic, 1=ISP
+network_operator_name - Mobile Carrier Name http://developer.android.com/reference/android
+   /telephony/TelephonyManager.html#getNetworkOperatorName()
+network_operator_code - MCC + MNC  http://developer.android.com/reference/android
+   /telephony/TelephonyManager.html#getNetworkOperator() 
+brand - http://developer.android.com/reference/android/os/Build.html#BRAND 
+device - http://developer.android.com/reference/android/os/Build.html#DEVICE 
+hardware - http://developer.android.com/reference/android/os/Build.html#HARDWARE 
+build_id - http://developer.android.com/reference/android/os/Build.html#ID 
+manufacturer - http://developer.android.com/reference/android/os/Build.html#MANUFACTURER 
+model - http://developer.android.com/reference/android/os/Build.html#MODEL 
+product - http://developer.android.com/reference/android/os/Build.html#PRODUCT  
+cdma_cell_id - http://developer.android.com/reference/android/telephony/cdma/package-summary.html 
+gsm_cell_id - http://developer.android.com/reference/android/telephony/gsm/package-summary.html 
+location_type - 0 = unknown, 1 = GPS, 2 = GeoIP
+sim_network_operator_name - Mobile Carrier Name from the SIM
+sim_network_operator_code - MCC + MNC from the SIM  http://en.wikipedia.org/wiki/Mobile_Country_Code 
+```
+\normalsize
+
+### iOS header descriptives
+
+\footnotesize
+
+```{ }
+test_id - unique id of test in our system
+device_id - unique device id in our system
+test_date - YYYY-MM-DD HH:MM:SS in Pacific time (we can accommodate different time zones if needed)
+client_ip - ip of client 
+download_kbps - download speed in kilobits per second
+upload_kbps - upload speed in kilobits per second
+latency_ms - ping in milliseconds
+server_name - name of server tested to (name of city it is located in)
+server_country - country name of server
+server_country_code - country code of server
+server_latitude - latitude of server tested to
+server_longitude - longitude of server tested to
+server_sponsor_name - sponsor name of server
+client_country - country name of the client
+client_country_code - country code of the client
+client_region - region name of client (this will be state in the US)
+client_region_code - region code of client
+client_city - city of client
+client_latitude - latitude of client (GPS or Maxmind when location services disabled)
+client_longitude - longitude of client (GPS or Maxmind when location services disabled)
+miles_between - miles between the client and the server tested to
+connection_type - 0=unknown, 1=cell, 2=wifi, 3=GPRS, 4=Edge, 5=WCDMA, 6=HSDPA, 
+   7=HSUPA, 8=CDMA1x, 9=CDMAEVDORev0, 10=CDMAEVDORevB, 11=eHRPD, 12=LTE 
+isp_name  - name of ISP (Maxmind) 
+is_isp    - 0=Corporation/Academic, 1=ISP
+carrier_name - http://developer.apple.com/library/ios/documentation/NetworkingInternet
+   /Reference/CTCarrier/Reference/Reference.html#//apple_ref/occ/instp/CTCarrier/carrierName 
+iso_country_code - http://developer.apple.com/library/ios/documentation/NetworkingInternet
+   /Reference/CTCarrier/Reference/Reference.html#//apple_ref/occ/instp/CTCarrier/isoCountryCode 
+mobile_country_code - http://developer.apple.com/library/ios/documentation/NetworkingInternet
+   /Reference/CTCarrier/Reference/Reference.html#//apple_ref/occ/instp/CTCarrier/mobileCountryCode 
+mobile_network_code - http://developer.apple.com/library/ios/documentation/NetworkingInternet
+   /Reference/CTCarrier/Reference/Reference.html#//apple_ref/occ/instp/CTCarrier/mobileNetworkCode
+model - iPad, iPhone, iPod Touch 
+version - iOS version
+location_type - 0 = unknown, 1 = GPS, 2 = GeoIP
+```
+\normalsize
+
+### Windows Mobile header descriptives
+
+\footnotesize
+
+```{}
+test_id - unique id of test in our system
+device_id - unique device id in our system
+test_date - YYYY-MM-DD HH:MM:SS in Pacific time (we can accommodate different timezones if needed)
+client_ip - ip of client 
+download_kbps - download speed in kilobits per second
+upload_kbps - upload speed in kilobits per second
+latency_ms - ping in milliseconds
+server_name - name of server tested to (name of city it is located in)
+server_country - country name of server
+server_country_code - country code of server
+server_latitude - latitude of server tested to
+server_longitude - longitude of server tested to
+server_sponsor_name - sponsor name of server
+client_country - country name of the client
+client_country_code - country code of the client
+client_region - region name of client (this will be state in the US)
+client_region_code - region code of client
+client_city - city of client
+client_latitude - latitude of client (GPS or Maxmind when location services disabled)
+client_longitude - longitude of client (GPS or Maxmind when location services disabled)
+miles_between - miles between the client and the server tested to
+connection_type - 0=unknown, 1=cell, 2=wifi, 3=GPRS, 4=1XRTT, 5=EVDO, 6=EDGE, 7=3G, 
+   8=HSPA, 9=EVDV, 10=PassThru, 11=LTE, 12=EHRPD
+isp_name  - name of ISP (Maxmind) 
+is_isp    - 0=Corporation/Academic, 1=ISP
+carrier_name - AT&T, Verizon etc 
+manufacturer - Nokia, HTC, etc.
+device_name - name of the device for e.g. "HD7 T9292" 
+hardware_version - device hardware version e.g. "1.0.0.0"
+firmware_version - device firmware_version e.g. "1232.2107.1241.1001"
+location_type - 0 = unknown, 1 = GPS, 2 = GeoIP
+
+```
+
+\normalsize
+
 
 Step 2: Data preprocessing
 ==============
@@ -273,151 +420,81 @@ kable(tbl)
 
 Most of the tests were conducted on an Android OS closely followed by iOS. Windows Mobile devices have limited representation in the data set. In this test we are not interested in testing the difference in performance per device or operating system.
 
-Sample test data from Ookla
---------------------------
-Ookla has some random sample data available, this data can be used to validate our method. To validate the test result one would need the specific data of the Netherlands.
-
-A sample set of files from Ookla of the data can be found [here](http://www.ookla.com/netmetrics).
-
-### Android header descriptives
-
-\footnotesize
-
-```{}
-test_id - unique id of test in our system
-device_id - unique device id in our system
-android_fingerprint
-test_date - YYYY-MM-DD HH:MM:SS in Pacific time (we can accommodate different time zones if needed)
-client_ip - ip of client
-download_kbps - download speed in kilobits per second
-upload_kbps - upload speed in kilobits per second
-latency_ms - ping in milliseconds
-server_name - name of server tested to (name of city it is located in)
-server_country - country name of server
-server_country_code - country code of server
-server_latitude - latitude of server tested to
-server_longitude - longitude of server tested to
-server_sponsor_name - sponsor name of server
-client_country - country name of the client
-client_country_code - country code of the client
-client_region - region name of client (this will be state in the US)
-client_region_code - region code of client
-client_city - city of client
-client_latitude - latitude of client (GPS or Maxmind when location services disabled)
-client_longitude - longitude of client (GPS or Maxmind when location services disabled)
-miles_between - miles between the client and the server tested to
-connection_type - http://developer.android.com/reference/android/telephony/TelephonyManager.html
-   0=unknown,1= Cell, 2=Wifi, 3=Gprs, 4=Edge, 5=Utms, 6=Cdma, 7=Evdo0, 8=EvdoA, 9=OnexRTT, 
-   10=Hsdpa, 11=Hspa, 12=Iden, 13=Ehrpd, 14=EvdoB, 15=Lte, 16=Hsupa, 17=Hspap
-isp_name  - name of ISP (Maxmind)
-is_isp    - 0=Corporation/Academic, 1=ISP
-network_operator_name - Mobile Carrier Name http://developer.android.com/reference/android
-   /telephony/TelephonyManager.html#getNetworkOperatorName()
-network_operator_code - MCC + MNC  http://developer.android.com/reference/android
-   /telephony/TelephonyManager.html#getNetworkOperator() 
-brand - http://developer.android.com/reference/android/os/Build.html#BRAND 
-device - http://developer.android.com/reference/android/os/Build.html#DEVICE 
-hardware - http://developer.android.com/reference/android/os/Build.html#HARDWARE 
-build_id - http://developer.android.com/reference/android/os/Build.html#ID 
-manufacturer - http://developer.android.com/reference/android/os/Build.html#MANUFACTURER 
-model - http://developer.android.com/reference/android/os/Build.html#MODEL 
-product - http://developer.android.com/reference/android/os/Build.html#PRODUCT  
-cdma_cell_id - http://developer.android.com/reference/android/telephony/cdma/package-summary.html 
-gsm_cell_id - http://developer.android.com/reference/android/telephony/gsm/package-summary.html 
-location_type - 0 = unknown, 1 = GPS, 2 = GeoIP
-sim_network_operator_name - Mobile Carrier Name from the SIM
-sim_network_operator_code - MCC + MNC from the SIM  http://en.wikipedia.org/wiki/Mobile_Country_Code 
-```
-\normalsize
-
-### iOS header descriptives
-
-\footnotesize
-
-```{ }
-test_id - unique id of test in our system
-device_id - unique device id in our system
-test_date - YYYY-MM-DD HH:MM:SS in Pacific time (we can accommodate different time zones if needed)
-client_ip - ip of client 
-download_kbps - download speed in kilobits per second
-upload_kbps - upload speed in kilobits per second
-latency_ms - ping in milliseconds
-server_name - name of server tested to (name of city it is located in)
-server_country - country name of server
-server_country_code - country code of server
-server_latitude - latitude of server tested to
-server_longitude - longitude of server tested to
-server_sponsor_name - sponsor name of server
-client_country - country name of the client
-client_country_code - country code of the client
-client_region - region name of client (this will be state in the US)
-client_region_code - region code of client
-client_city - city of client
-client_latitude - latitude of client (GPS or Maxmind when location services disabled)
-client_longitude - longitude of client (GPS or Maxmind when location services disabled)
-miles_between - miles between the client and the server tested to
-connection_type - 0=unknown, 1=cell, 2=wifi, 3=GPRS, 4=Edge, 5=WCDMA, 6=HSDPA, 
-   7=HSUPA, 8=CDMA1x, 9=CDMAEVDORev0, 10=CDMAEVDORevB, 11=eHRPD, 12=LTE 
-isp_name  - name of ISP (Maxmind) 
-is_isp    - 0=Corporation/Academic, 1=ISP
-carrier_name - http://developer.apple.com/library/ios/documentation/NetworkingInternet
-   /Reference/CTCarrier/Reference/Reference.html#//apple_ref/occ/instp/CTCarrier/carrierName 
-iso_country_code - http://developer.apple.com/library/ios/documentation/NetworkingInternet
-   /Reference/CTCarrier/Reference/Reference.html#//apple_ref/occ/instp/CTCarrier/isoCountryCode 
-mobile_country_code - http://developer.apple.com/library/ios/documentation/NetworkingInternet
-   /Reference/CTCarrier/Reference/Reference.html#//apple_ref/occ/instp/CTCarrier/mobileCountryCode 
-mobile_network_code - http://developer.apple.com/library/ios/documentation/NetworkingInternet
-   /Reference/CTCarrier/Reference/Reference.html#//apple_ref/occ/instp/CTCarrier/mobileNetworkCode
-model - iPad, iPhone, iPod Touch 
-version - iOS version
-location_type - 0 = unknown, 1 = GPS, 2 = GeoIP
-```
-\normalsize
-
-### Windows Mobile header descriptives
-
-\footnotesize
-
-```{}
-test_id - unique id of test in our system
-device_id - unique device id in our system
-test_date - YYYY-MM-DD HH:MM:SS in Pacific time (we can accommodate different timezones if needed)
-client_ip - ip of client 
-download_kbps - download speed in kilobits per second
-upload_kbps - upload speed in kilobits per second
-latency_ms - ping in milliseconds
-server_name - name of server tested to (name of city it is located in)
-server_country - country name of server
-server_country_code - country code of server
-server_latitude - latitude of server tested to
-server_longitude - longitude of server tested to
-server_sponsor_name - sponsor name of server
-client_country - country name of the client
-client_country_code - country code of the client
-client_region - region name of client (this will be state in the US)
-client_region_code - region code of client
-client_city - city of client
-client_latitude - latitude of client (GPS or Maxmind when location services disabled)
-client_longitude - longitude of client (GPS or Maxmind when location services disabled)
-miles_between - miles between the client and the server tested to
-connection_type - 0=unknown, 1=cell, 2=wifi, 3=GPRS, 4=1XRTT, 5=EVDO, 6=EDGE, 7=3G, 
-   8=HSPA, 9=EVDV, 10=PassThru, 11=LTE, 12=EHRPD
-isp_name  - name of ISP (Maxmind) 
-is_isp    - 0=Corporation/Academic, 1=ISP
-carrier_name - AT&T, Verizon etc 
-manufacturer - Nokia, HTC, etc.
-device_name - name of the device for e.g. "HD7 T9292" 
-hardware_version - device hardware version e.g. "1.0.0.0"
-firmware_version - device firmware_version e.g. "1232.2107.1241.1001"
-location_type - 0 = unknown, 1 = GPS, 2 = GeoIP
-
-```
-
-\normalsize
-
 Geographical coverage area for 4G
 ------------------
-For this test to be fair to all three operators, we limit the comparison of the test to areas in which all three operators (KPN, Vodafone and T-Mobile) claim to have 4G coverage at the time of the measurements. The 4G network is constantly improved and extended, every month the area T-Mobile has 4G coverage is extended. This means that some areas only got 4G coverage during q4 2014, the period of the test. In the per city analysis this can be seen for the specific cities that only started to have 4G in the test period. 
+For this test to be fair to all three operators, we limit the comparison of the test to areas in which all three operators (KPN, Vodafone and T-Mobile) claim to have 4G coverage at the time of the measurements. The 4G network is constantly improved and extended, every month the area T-Mobile has 4G coverage is extended. This means that some areas only got 4G coverage during Q4 2014, the period of the test. In the per city analysis, this can be seen for the specific cities that only started to have 4G in the test period. 
+
+
+### Suspicious coordinates
+
+Are there any locations, or coordinates, that occur very often in the investigated 4G area?
+If we join the coordinates latitude and longitude together and look at the most frequent occurrences we see that there are indeed some coordinates that are very frequent. How do these exact same coordinates end up in the data? To understand this we need to explain a bit more on how the Ookla Speed test application gets the coordinates from a mobile device. 
+There are several scenario's that can be the case: 
+1)The customer has approved the application access to the GPS coordinates of his/her device.
+2)For some reason the app cannot read the GPS coordinates from the device at the time of the test. This reason can be of different origins, the user has blocked access or we are in a building or there are other technical reasons why the exact GPS coordinates cannot be accessed.
+
+Whenever the exact coordinates are not available, due to measurement issues or because the customer is not allowing the application to use the GPS coordinates Ookla uses GEO-IP. GEO-IP is a online service to estimate the physical location of an ip-internet address (more online [from maxmind](https://www.maxmind.com/en/geoip2-services-and-databases) ).
+
+```{r susp-coord}
+
+# combine coordinates in "lat-lon" 
+str.coord <- paste(df.4G$client_latitude,",",df.4G$client_longitude)
+
+# top 10 most frequent locations
+tbl <- head(sort(table(str.coord),decreasing = TRUE),n=15)
+nms <- names(tbl)
+df.tmp <- as.data.frame(cbind(nms,tbl))
+names(df.tmp) <- c("Coordinates","Count")
+kable(df.tmp, row.names = FALSE,align=c("l","r"))
+
+coord <- names(sort(table(str.coord),decreasing = TRUE)[1])
+n.test.at.coord <- sort(table(str.coord),decreasing = TRUE)[1]
+
+```
+
+To understand more on how GEO-IP works we asked some specific questions to Ookla on these issues.
+
+Coordinate (52.5-5.75) : Response from Ookla: *"The IP addresses associated with these tests show up as in the Netherlands, but that's specific as it gets regarding GEO-IP. Were assuming that 52.5, 5.75 is the Dutch equivalent of the middle of Kansas (in the US if GEO-IP Cannot be determined it defaults to the center of the US which in our case is Kansas). All it knows is it's in the Netherlands, so GeoIP specifies the center of the country."*
+
+Coordinates (52.3667-4.9) and (52.35-4.9167) are both in Amsterdam, but in one case the latitude is with less precision and in the other the longitude. Question to Ookla: Can we still assume the measurements are from Amsterdam? 
+Response Ookla: *Yes, GeoIP is used here. We can assume you are in Amsterdam but like any other GeoIP location result, the confidence level isn't as high as it would be if we were able to get location information directly from the device, meaning if we were able to obtain GPS instead of GEO-IP.* 
+
+Coordinate (51.9167-4.5) is in Rotterdam. Again with limited precision, same response as above from Ookla.
+
+Coordinate (52.0666-4.3209) is in The Hague. All cases are tests with operator equal to "T-Mobile NL" also this location is close to the T-Mobile office in The Hague. We will exclude these tests as potentially being from T-Mobile employees.
+
+Also see the [precision of the coordinates](https://en.wikipedia.org/wiki/Decimal_degrees) denotes the fact that we are unsure about the exact location.
+
+**So what do we do with these suspicious coordinates?**
+
+The "Unknown" location, which has coordinates (`r coord`) and is the default location from Ookla if the GPS cannot pick up the exact location during the test, we have `r n.test.at.coord` speed tests with this coordinate alone. We will exclude tests performed at this coordinate from the general analysis. Nevertheless, we will analyse this set the same way we analyse individual cities, the result for this set can be found as the last citie labeled "unknown".
+
+```{r default-location}
+# filter unkown location
+df.unkwnloc <- df.4G[paste(df.4G$client_latitude,",",df.4G$client_longitude)==coord,]
+
+# filter 52.0666-4.3209
+coord <- "52.0666 , 4.3209"
+df.dh <- df.4G[paste(df.4G$client_latitude,",",df.4G$client_longitude)==coord,]
+
+# filter unkown location from 4G as we want only known locations
+df.4G <- df.4G[setdiff(rownames(df.4G),rownames(df.dh)),]
+
+# replace Dronten with UNKNOWN
+df.unkwnloc$gm_naam <- "Unkown Location"
+
+# filter unkown location from 4G as we want only known locations
+df.4G <- df.4G[setdiff(rownames(df.4G),rownames(df.unkwnloc)),]
+
+```
+
+**T-Mobile head office**
+We removed `r nrow(df.dh)` tests from coordinates "52.0666 , 4.3209" in The Hague. As they are close to the head-office of T-Mobile and indeed all tests from this location are done from a T-Mobile network.
+
+The other locations (to be precise all but these two: "52.5 , 5.75" and "52.0666 , 4.3209")  have been explained above and there is no knowledge at this point that leads to exclusion, so these tests remain in the data set.
+
+After removing `r nrow(df.dh)` tests from coordinates "52.0666 , 4.3209" in The Hague and `r nrow(df.unkwnloc)` from the coordinates (`r coord`) the data set contains `r n4g` - `r nrow(df.dh)+nrow(df.unkwnloc)`  = `r n4g - nrow(df.dh) - nrow(df.unkwnloc)` speed tests at this point.
+
 
 ### Mapping test coordiantes to city boundaries
 To identify the exact 4G coverage area we will use in this analysis, we use data from CBS. CBS is the Central Bureau of Statistics in the Netherlands. They provide [publicly available](http://www.cbs.nl/nl-NL/menu/themas/dossiers/nederland-regionaal/publicaties/geografische-data/archief/2014/2013-wijk-en-buurtkaart-art.htm) polygon data on cities in the Netherlands. Based on these geographical city boundaries we map each latitude, longitude coordinate onto a city.
@@ -435,7 +512,7 @@ T-Mobile has the least 4G coverage of the three and per end of 2014 has actual c
 ```{r area }
 library(png)
 library(grid)
-img <- readPNG("./img/tmobile4gcoverage.png")
+img <- readPNG("./img/tm-coverage-q4-2014.png")
 grid.raster(img)
 
 ```
@@ -449,17 +526,17 @@ kable(as.data.frame(cbind(mt,100*pt)),col.names = c('Number of tests','percentag
 
 ```
 
-Areas that only had 4G coverage from November 2014 on-wards are: Apeldoorn, Voorst, Dinkelland, Enschede, Losser, Oldenzaal. 
-Areas that were hooked up in December are : Eijsden, Maastricht, Margraten, Bedum, Groningen, Haren, Hoogezand-sappemeer, Leek, Loppersum, Noordenveld, Slochteren, Ten Boer, Tynaarlo
+Areas that only had 4G coverage by T-Mobile from November 2014 on-wards are: Apeldoorn, Voorst, Dinkelland, Enschede, Losser, Oldenzaal. 
+Areas that were hooked up by T-Mobile in December are : Eijsden, Maastricht, Margraten, Bedum, Groningen, Haren, Hoogezand-sappemeer, Leek, Loppersum, Noordenveld, Slochteren, Ten Boer, Tynaarlo
 
-All other cities in the area had 4G coverage on or before 1 October 2014.
+All other cities in the area had 4G coverage from T-Mobile on or before 1 October 2014. Vodafone and KPN claim national wide coverage in this time period.
 
 So we filtered the data set to include only speed tests from the coverage area, speed tests outside this area are neglected.
-The data set now contains `r n4g` - `r n4g - nrow(df.4G)` = `r nrow(df.4G)` speed tests.
+The data set now contains `r n4g - nrow(df.dh) - nrow(df.unkwnloc)` - `r n4g - nrow(df.dh) - nrow(df.unkwnloc) - nrow(df.4G)` = `r nrow(df.4G)` speed tests.
 
 ### Suspicious speeds
 
-In the data we check for up and download speeds that are technically impossible.
+In the data we check for up and download speeds that are technically impossible. 
 *Download speeds* for 4G are limited to 150Mbps on the T-mobile technology.
 
 KPN and Vodafone have a technology called LTE advanced which has a maximum download speed of 225Mbps.
@@ -511,76 +588,6 @@ So again we remove suspicious measurements in which the **upload** speed exceede
 
 After removing in total `r length(rw.fltr.4)+length(rw.fltr.5)+length(rw.fltr.6)` of these suspicious measurements the data set contains `r nrow(df.4G)` speed tests at this point.
 
-### Suspicious coordinates
-
-Are there any locations, or coordinates, that occur very often in the investigated 4G area?
-If we join the coordinates latitude and longitude together and look at the most frequent occurrences we see that there are indeed some coordinates that are very frequent. How do these exact same coordinates end up in the data? To understand this we need to explain a bit more on how the Ookla Speed test application gets the coordinates from a mobile device. 
-There are several scenario's that can be the case: 
-1)The customer has approved the application access to the GPS coordinates of his/her device.
-2)For some reason the app cannot read the GPS coordinates from the device at the time of the test. This reason can be of different origins, the user has blocked access or we are in a building or there are other technical reasons why the exact GPS coordinates cannot be accessed.
-
-Whenever the exact coordinates are not available, due to measurement issues or because the customer is not allowing the application to use the GPS coordinates Ookla uses GEO-IP. GEO-IP is a online service to estimate the physical location of an ip-internet address (more online [from maxmind](https://www.maxmind.com/en/geoip2-services-and-databases) ).
-
-```{r susp-coord}
-
-# combine coordinates in "lat-lon" 
-str.coord <- paste(df.4G$client_latitude,",",df.4G$client_longitude)
-
-# top 10 most frequent locations
-tbl <- head(sort(table(str.coord),decreasing = TRUE),n=15)
-nms <- names(tbl)
-df.tmp <- as.data.frame(cbind(nms,tbl))
-names(df.tmp) <- c("Coordinates","Count")
-kable(df.tmp, row.names = FALSE,align=c("l","r"))
-
-coord <- names(sort(table(str.coord),decreasing = TRUE)[1])
-n.test.at.coord <- sort(table(str.coord),decreasing = TRUE)[1]
-
-```
-
-To understand more on how GEO-IP works we asked some specific questions to Ookla on these issues.
-
-Coordinate (52.5-5.75) : Response from Ookla: *"The IP addresses associated with these tests show up as in the Netherlands, but that's specific as it gets regarding GEO-IP. Were assuming that 52.5, 5.75 is the Dutch equivalent of the middle of Kansas (in the US if GEO-IP Cannot be determined it defaults to the center of the US which in our case is Kansas). All it knows is it's in the Netherlands, so GeoIP specifies the center of the country."*
-
-Coordinates (52.3667-4.9) and (52.35-4.9167) are both in Amsterdam, but in one case the latitude is with less precision and in the other the longitude. Question to Ookla: Can we still assume the measurements are from Amsterdam? 
-Response Ookla: *Yes, GeoIP is used here. We can assume you are in Amsterdam but like any other GeoIP location result, the confidence level isn't as high as it would be if we were able to get location information directly from the device, meaning if we were able to obtain GPS instead of GEO-IP.* 
-
-Coordinate (51.9167-4.5) is in Rotterdam. Again with limited precision, same response as above from Ookla.
-
-Coordinate (52.0666-4.3209) is in The Hague. All cases are tests with operator equal to "T-Mobile NL" also this location is close to the T-Mobile office in The Hague. We will exclude these tests as potentially being from T-Mobile employees.
-
-Also see the [precision of the coordinates](https://en.wikipedia.org/wiki/Decimal_degrees) denotes the fact that we are unsure about the exact location.
-
-**So what do we do with these suspicious coordinates?**
-
-In the top location, which has coordinates (`r coord`) and is in the city Dronten, we have `r n.test.at.coord` speed tests with this coordinate alone. We will exclude tests performed at this coordinate from the general analysis. Nevertheless, we will analyse this set the same way we analyse individual cities.
-
-```{r default-location}
-# filter unkown location
-df.unkwnloc <- df.4G[paste(df.4G$client_latitude,",",df.4G$client_longitude)==coord,]
-
-# filter 52.0666-4.3209
-coord <- "52.0666 , 4.3209"
-df.dh <- df.4G[paste(df.4G$client_latitude,",",df.4G$client_longitude)==coord,]
-
-# filter unkown location from 4G as we want only known locations
-df.4G <- df.4G[setdiff(rownames(df.4G),rownames(df.dh)),]
-
-# replace Dronten with UNKNOWN
-df.unkwnloc$gm_naam <- "Unkown Location"
-
-# filter unkown location from 4G as we want only known locations
-df.4G <- df.4G[setdiff(rownames(df.4G),rownames(df.unkwnloc)),]
-
-```
-
-**T-Mobile head office**
-We removed `r nrow(df.dh)` tests from coordinates "52.0666 , 4.3209" in The Hague. As they are close to the head-office of T-Mobile and indeed all tests from this location are done from a T-Mobile network.
-
-The other locations (to be precise all but these two: "52.5 , 5.75" and "52.0666 , 4.3209")  have been explained above and there is no knowledge at this point that leads to exclusion, so these tests remain in the data set.
-
-After removing `r nrow(df.dh)` tests from coordinates "52.0666 , 4.3209" in The Hague and `r nrow(df.unkwnloc)` from the coordinates (`r coord`) the data set contains `r nrow(df.4G)+nrow(df.dh)+nrow(df.unkwnloc)` - `r nrow(df.dh)+nrow(df.unkwnloc)`  = `r nrow(df.4G)` speed tests at this point.
-
 ### Suspicious dates or times
 We count the number of tests per day for the months October, November and December of 2014. Again we are looking at  any suspicious peaks in the data?
 ```{r timestamps, fig.align='center',fig.width=8}
@@ -618,8 +625,6 @@ kable(tbl,caption="Counts per operator per month")
 
 Above a count per month per operator in the 4G coverage area. This is the data set on which we conduct the remainder of the analysis.
 
-### Ookla Speedtest itself
-Ookla designed their speed test in such a way that the results are as robust as possible, so they deliver a reproducible speed metric. Ookla’s speedtest.net is the de-facto standard for internet speed testing. According to http://www.ookla.com/netmetrics, NetMetrics is the choice of nearly every Fortune 500 ISP and Mobile Provider in the world. Please read more on the design decisions Ookla made to be able to deliver a robust and stable metric for speed test over http [here](https://support.speedtest.net/hc/en-us/articles/203845400-How-does-the-test-itself-work-How-is-the-result-calculated-).
 
 \newpage
 
@@ -657,7 +662,7 @@ ggplot(df.4G, aes(x=download_kbps)) + geom_histogram( colour="black", fill="whit
 
 ```
 
-We plot the three histograms, one for each operator, right above each other so the horizontal axes are aligned. The red lines denotes the mean (or average) speed of all speed tests for the specific operator.
+We plot the three histograms, one for each operator, right above each other so the horizontal axes are aligned. The red lines denotes the mean (or average) speed of all speed tests for the specific operator. If the red line is placed to the righthandside in this histogram that means the average speed for this operator is faster. The red line to the left means the avarage speed is slower. We can see that the red line of T-Mobile is farest to the right so T-Mobile apparently has the highest download speed. 
 
 ### Upload speed
 
@@ -675,11 +680,11 @@ ggplot(df.4G, aes(x=upload_kbps)) + geom_histogram( colour="black", fill="white"
 
 ```
 
-We plot the three histograms, one for each operator, right above each other so the horizontal axes are aligned. The red lines denotes the mean (or average) speed of all speed tests for the specific operator.
+We plot the three histograms, one for each operator, right above each other so the horizontal axes are aligned. The red lines denotes the mean (or average) speed of all speed tests for the specific operator. If the red line is placed to the righthandside in this histogram that means the average speed for this operator is faster. The red line to the left means the avarage speed is slower. We can see that the red line of T-Mobile is farest to the right so T-Mobile apparently has the highest upload speed as well. 
 
 ### Latency
 
-In the histogram below we see log(latency) speed on the horizontal axis. The log transformation makes the figure more readable. For the reader, the horizontal axis shows powers of 10. So 2 actually means 10^{2}=100 and 5 actually stands for 10^{5}=10.000 . The number of test cases are plotted as bars, on the vertical axis we see the count of the number of speed tests in a specific range. For latency we take the log so the outlines scale and we can have a look at the shape of the distribution.
+In the histogram below we see log(latency) speed on the horizontal axis. The log transformation makes the figure more readable. For the reader, the horizontal axis shows powers of 10. So 2 actually means $10^{2}$ = 100 and 5 actually stands for $10^{5}$ = 10.000 . The number of test cases are plotted as bars, on the vertical axis we see the count of the number of speed tests in a specific range. For latency we take the log so the outlines scale and we can have a look at the shape of the distribution.
 
 ```{r latency, fig.cap='Histogram latency per operator', fig.height=3 }
 library(plyr)
@@ -693,6 +698,8 @@ ggplot(df.4G, aes(x=log(latency))) + geom_histogram( colour="black", fill="white
                 linetype="solid", size=1, colour="red")
 
 ```
+
+For latency smaller is better, so in this plot we are looking at which operator has the smallest latency. Again we see the red lines per operator. The x axis are on a log scale to these are factors of ten. The average latency(red line) for T-Mobile is the most to the left, which means T-Mobile has the smallest latency of the three operators.
 
 Box-plot
 ---------
@@ -708,6 +715,17 @@ ggplot(df.4G, aes(x=operator, y=download_kbps, fill=operator)) + geom_boxplot() 
 
 ```
 
+Also in the box-plot we see that for T-Mobile the diamond shape(average) and the thick line representing the median are higher then the same values for the other operators. So also in this box-plot for download speed we see that T-Mobile has the highest download speed.
+
+If we zoom in on percentiles we can look at the fastest 10%, 5% and 1% of speed tests:
+```{r quant-down}
+qdwn <- ddply(df.4G,.(operator), function(x) round(quantile(x$download,c(.9,.95,.99))))
+names(qdwn) <- c("operator","10%","5%","1%")
+kable(qdwn, caption="Top percentiles average download speed(Kbps)")
+```
+
+From the table we see that T-Mobile scores best in the fastest 10%,5% and 1% of download speed tests per operator. 
+
 ### Upload speed
 We see a box plot for each of the operators on the x axis, the vertical axis shows the speed test values in Kbps. The daimond shape represents the mean, the thick line represents the median. the black dots on the top and bottom represent extreme cases. The data is split up into quartiles, that means four equally sized proportions. The first and fourth quarter are represented as a line, the second and third as a box.
 
@@ -717,6 +735,17 @@ ggplot(df.4G, aes(x=operator, y=upload_kbps, fill=operator)) + geom_boxplot() +
     guides(fill=FALSE) + stat_summary(fun.y=mean, geom="point", shape=5, size=4)
 
 ```
+
+Also in the box-plot we see that for T-Mobile the diamond shape(average) and the thick line representing the median are higher then the same values for the other operators. So also in this box-plot for upload speed we see that T-Mobile has the highest upload speed.
+
+If we zoom in on percentiles we can look at the fastest 10%, 5% and 1% of speed tests:
+```{r quant-up}
+qdwn <- ddply(df.4G,.(operator), function(x) round(quantile(x$upload,c(.9,.95,.99))))
+names(qdwn) <- c("operator","10%","5%","1%")
+kable(qdwn, caption="Top percentiles average upload speed(Kbps)")
+```
+
+From the table we see that T-Mobile scores best in the fastest 10%,5% and 1% of upload speed tests per operator. 
 
 ### Latency
 For latency ( or ping) we take the log so the outliers scale and we can have a look at the shape of the distribution.
@@ -730,11 +759,13 @@ ggplot(df.4G, aes(x=operator, y=log(latency), fill=operator)) + geom_boxplot() +
 
 ```
 
+In the box-plot for latancy we see that for T-Mobile the diamond shape(average) and the thick line representing the median are lower then the same values for the other operators. remember, for latancy lower is better. So in this box-plot for latency we see that T-Mobile has the lowest latency.
+
 \newpage
 
 Step 4: Test design
 =========
-What we want to test is if, on average, a customer that uses a specific operator gets a higher speed then using another operator, with all else equal. To do this we have collected thousands of test results from the three top operators. Now we want to compare each operator with the other two operators. So we do three tests, in each test we comparing one operator with another operator. In each test we compare two sets of tests. These sets are also called samples (from the Dutch population of mobile phone users) from which we calculate the sample means. Now our statistical test tests if these sample means are significantly different from one another.
+What we want to test is if, on average, a customer that uses T-Mobile 4G Mobile Network gets a higher average speed than using KPN’s or Vodafone’s 4G Mobile Network, with all else equal. To do this we have collected thousands of Ookla NetMetrics Speedtest results taken from the three top operators (KPN, Vodafone and T-Mobile) which have been filtered as set out in the above. Now we want to compare T-Mobile with the other two operators. So we do two tests: the first is comparing T-Mobile with KPN and the second is comparing T-Mobile with Vodafone. In each test we compare all three metrics: Upload speed, Downloud speed and latency(or ping). For each operator we have a sample set available in the data. These sets are so called samples (from the Dutch population of mobile phone users) from which we calculate the sample means. Now our statistical test tests if these sample means are significantly different from one another.
 
 In practice, the Central Limit Theorem assures us that, under a wide range of assumptions, the distributions of the two sample means being tested will themselves approach Normal distributions as the sample sizes get large, regardless (this is where the assumptions come in) of the distributions of the underlying data. As a consequence, as the sample size gets larger, the difference of the means becomes normally distributed, and the requirements necessary for the t-statistic of an unpaired t-test to have the nominal t distribution become satisfied.
 
@@ -750,21 +781,24 @@ conflevel <- 0.99
 
 ###Significance
 
-So when is a test significant? And if so at what level? And furthermore can we qualify such a significant result as good or bad? To start with the last remark, all qualifications of a statistical result are subjective. To explain this in more detail, let's consider the following scenario's. The first one: would you take a plane if the operator assures you that they have significantly proven they do not crash? Your next question will probably be, at what significance level did you take this conclusion? Their answer: With 95% confidence we can assure you we will not crash. I guess you would not hop on right? So significance is always relative, loosing your suitcase on a flight is not as bad as losing your life. One way of looking at 95% confidence is that 1 out of 20 trials (in 5% of the cases) you make a so called Type 1 error, in which you wrongly reject the null-hypothesis. So in this case, if the p-value would be 0.05 you would claim that operator x is faster then operator y while in fact they were not. In applied practice, confidence intervals are typically stated at the 95% or 99% confidence level (More on [significance](https://en.wikipedia.org/wiki/Statistical_significance) ). 
+So when is a test significant? And if so at what level? And furthermore can we qualify such a significant result as good or bad? To start with the last remark, all qualifications of a statistical result are subjective. One way of looking at 95% confidence is that 1 out of 20 trials (in 5% of the cases) you make a so called Type 1 error, in which you wrongly reject the null-hypothesis. So in this case, if the p-value would be 0.05(confidence level 95%) you would claim that operator x is faster then operator y while in fact they were not. In applied practice, confidence intervals are typically stated at the 95% or 99% confidence level (More on [significance](https://en.wikipedia.org/wiki/Statistical_significance) ). 
 
-In our test we will set the confidence level to be `r 100*conflevel`%. This means we will reject the Null Hypothesis only if we are `r 100*conflevel` % confident we do not make a mistake. From the test result we see that in most cases the calculated  p-values are very much smaller then 1 - `r conflevel` = `r 1-conflevel`, so changes of making this type of error are even considerably smaller then the claimed confidence level of `r 100*conflevel`%. 
+In our test we will set the confidence level to be `r 100*conflevel`%, which is more strickt then 95%. This means we will reject the Null Hypothesis only if we are `r 100*conflevel` % confident we do not make a mistake. From the test result we see that in most cases the calculated  p-values are very much smaller then 1 - `r conflevel` = `r 1-conflevel`, so changes of making this type of error are even considerably smaller then the claimed confidence level of `r 100*conflevel`%. 
 
 ### P-value
-In statistics, the p-value is a function of the observed sample results (a statistic) that is used for testing a statistical hypothesis. Before performing the test a threshold value is chosen, called the significance level of the test, traditionally 5% or 1% [1] and denoted as $\alpha$. If the p-value is equal or smaller than the significance level ($\alpha$), it suggests that the observed data is inconsistent with the assumption that the null hypothesis is true, and thus that hypothesis must be rejected and the alternative hypothesis is accepted as true ( see [wikipedia](https://en.wikipedia.org/wiki/P-value)).
+In statistics, the p-value is a function of the observed sample results (a statistic) that is used for testing a statistical hypothesis. Before performing the test a threshold value is chosen, called the significance level of the test, traditionally 5% or 1% and denoted as $\alpha$. If the p-value is equal or smaller than the significance level ($\alpha$), it suggests that the observed data is inconsistent with the assumption that the null hypothesis is true, and thus that hypothesis must be rejected and the alternative hypothesis is accepted as true ( see [wikipedia](https://en.wikipedia.org/wiki/P-value)).
 
 ### Confidence intervals
-Confidence intervals consist of a range of values (interval) that act as good estimates of the unknown population parameter. The level of confidence of the confidence interval would indicate the probability that the confidence range captures this true population parameter given a distribution of samples. This value is represented by a percentage, so when we say, "we are `r 100*conflevel`% confident that the true value of the parameter is in our confidence interval". A confidence interval does **not** predict that the true value of the parameter has a particular probability of being in the confidence interval given the data actually obtained. (see [wikipedia](https://en.wikipedia.org/wiki/Confidence_interval)).
+Confidence intervals consist of a range of values (interval) that act as good estimates of the unknown population parameter. The level of confidence of the confidence interval would indicate the probability that the confidence range captures this true population parameter given a distribution of samples. This value is represented by a percentage, so when we say, "we are `r 100*conflevel`% confident that the true value of the parameter is in our confidence interval", we express that 99% of the observed confidence intervals will hold the true value of the parameter. A confidence interval does **not** predict that the true value of the parameter has a particular probability of being in the confidence interval given the data actually obtained. (see [wikipedia](https://en.wikipedia.org/wiki/Confidence_interval)).
+
 
 \newpage
 
-Step 5: Test results
+Step 5: Test results coverage area
 ===========
 We test each operator against the other two operators so we have three tests. We put the confidence level to `r 100*conflevel` %. Our null-hypothesis is that the means are drawn from the same sample, so they are not different.
+
+In this test we use the whole data set, in the next chapter we test each individual city. 
 
 Let see what our test results are:
 
@@ -790,12 +824,14 @@ d1 <- as.numeric(as.character(df.tr.dwnload["T-Mobile vs KPN","Diff(Kbps)"]))
 r1 <- as.numeric(as.character(df.tr.dwnload["T-Mobile vs KPN","Rel(%)"]))
 l1 <- min(as.numeric(as.character(df.tr.dwnload["T-Mobile vs KPN","Mean 1"])),as.numeric(as.character(df.tr.dwnload["T-Mobile vs KPN","Mean 2"])))
 
+d2 <- as.numeric(as.character(df.tr.dwnload["T-Mobile vs Vodafone","Diff(Kbps)"]))
+r2 <- as.numeric(as.character(df.tr.dwnload["T-Mobile vs Vodafone","Rel(%)"]))
+l2 <- min(as.numeric(as.character(df.tr.dwnload["T-Mobile vs Vodafone","Mean 1"])),as.numeric(as.character(df.tr.dwnload["T-Mobile vs Vodafone","Mean 2"])))
+
 ```
 
 **Explanation of terms**
-
 \footnotesize
-
 **Sample 1** : Number of speed test samples for operator 1.
 
 **Sample 2** : Number of speed test samples for operator 2.
@@ -808,29 +844,30 @@ l1 <- min(as.numeric(as.character(df.tr.dwnload["T-Mobile vs KPN","Mean 1"])),as
 
 **Sign.** : Short for Significance. We compare the test statistic with the predefined confidence level(`r conflevel`). 'Yes' means the test is significant, 'No' means the test is not significant."))
 
-**Diff(Kbps)** : Difference of the means (DoM) is the difference of Mean 1 and Mean 2(Mean 1 - Mean 2). A big positive number here means operator 1 has a faster speed then operator 2. A big negative number means that operator 2 has a faster speed then operator 1. 
+**Diff(in Kbps or ms)** : Difference of the means (DoM) is the difference of Mean 1 and Mean 2(Mean 1 - Mean 2). For download and upload speeds(Kbps) big positive number here means operator 1 has a faster speed then operator 2. A big negative number means that operator 2 has a faster speed then operator 1. For latency(ms) this is the opposite, because smaller is better.
 
 **Conf Int** : Confidence interval consist of a range of values (interval) that act as good estimate of the *true* difference of the mean. We are `r 100*conflevel`% confident that the true value of the difference of the mean is in our confidence interval.
 
 **Rel(%)** : Relative difference in percentage. It is calculated as the difference of the mean divided by the slower of the two operators average speed.
 
 \normalsize
-
-Looking at the tables above we see that all results are significant and the P-values are very small. This means we can reject the null-hypothesis with great confidence. Hence we can state that with `r 100*conflevel`% confidence the difference in the means are significant.
-
-We can say with `r 100*conflevel`% confidence that in the investigated area the 4G network of T-Mobile outperforms KPN by  `r round(d1/1000,2)` Mbps, which is at least `r r1` % faster.
-
-Similar statements can be derived from the result tables per individual city below. Remark: Most, but not all tests at the city level are significant.
-
-Conclusion
-----------
-This analysis has been conducted with the utmost care and to the best knowledge of the analyst. The analysis is opensource and all code can be downloaded, reviewed and repeated from [GitHub](https://github.com/hugokoopmans/ookla-speedtest-analysis).
-
-Overall the tests performed give a significant result. Per city some tests were not significant.
+Looking at the tables above we see that all results are significant at $\alpha$ = `r 1-conflevel` level(`r 100*conflevel`% confidence level) and the resulting p-values are very small. This means we can reject the null-hypothesis with great confidence. Hence we can state that with `r 100*conflevel`% confidence the true difference in the means lies within the confidence interval provided in the table.
 
 \newpage
 
-Top 20 cities 
+Conclusion
+=========
+This analysis has been conducted with the utmost care and to the best knowledge of the analyst. The analysis is opensource and all code can be downloaded, reviewed and repeated from [GitHub](https://github.com/hugokoopmans/ookla-speedtest-analysis).
+
+Overall we can say that based on the speedtest data analysed in the investigated area the 4G network of T-Mobile outperforms both KPN and Vodafone on download speed, upload speed and latency. 
+
+From the data analysed in the investigated area the average download speed of the 4G network of T-Mobile outperforms KPN by `r round(d1/1000,2)` Mbps, which is `r r1`%. Also, from the data analysed in the investigated area the average download speed of the 4G network of T-Mobile outperforms Vodafone by `r round(d2/1000,2)` Mbps, which is `r r2`%. From table 9 & 10 above similar statements can be derived for upload speed and latency(for which smaller is better).
+
+For conclusions per individual city we refer to the section below.
+
+\newpage
+
+Analysis and results Top 20 cities per city 
 =============
 From CBS we have the following top 20 cities based on number of inhabitants("aantal inwoners"). 
 

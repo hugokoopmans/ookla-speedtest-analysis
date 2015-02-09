@@ -28,7 +28,8 @@ fn.ttest <- function(df.tmp, var, conflevel=0.95){
       d2 <- round(t2.tv$estimate[1]-t2.tv$estimate[2],1)
       c2 <- paste('+/-',round((t2.tv$conf.int[2]-t2.tv$conf.int[1])/2,1))
 #      m2 <- if (s2=="Yes"){round(t2.tv$conf.int[1],1)} else {"NA"}
-      l2 <- if (var=="latency"){round(max(t2.tv$estimate[1],t2.tv$estimate[2]),1)} else {round(min(t2.tv$estimate[1],t2.tv$estimate[2]),1)}
+      l2 <- if (var=="latency"){round(max(t2.tv$estimate[1],t2.tv$estimate[2]),1)} 
+              else {round(min(t2.tv$estimate[1],t2.tv$estimate[2]),1)}
       r2 <- if (s2=="Yes"){round(100*d2/l2,1)} else {"NA"}
       
 #       p3 <- format.pval(t1.tk$p.value)
@@ -52,6 +53,7 @@ fn.ttest <- function(df.tmp, var, conflevel=0.95){
 #                 )
 #       rownames(r3) <- "Vodafone vs KPN"
       df.tr <- as.data.frame(rbind(r1,r2))#,r3)) not interested in KPN vs Vodafone anymore...
-      names(df.tr) <- c("Operator1","Operator2","Sample1","Mean1","Sample2","Mean2", "P-value","Sign.","Diff(Kbps)","Conf Int","Rel(%)")
+      names(df.tr) <- if (var=="latency"){c("Operator1","Operator2","Sample1","Mean1","Sample2","Mean2", "P-value","Sign.","Diff(ms)","Conf Int","Rel(%)")}
+                         else {c("Operator1","Operator2","Sample1","Mean1","Sample2","Mean2", "P-value","Sign.","Diff(Kbps)","Conf Int","Rel(%)")}
       return(df.tr)
 }
