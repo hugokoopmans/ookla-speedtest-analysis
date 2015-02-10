@@ -40,7 +40,7 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 
 Abstract
 ========
-In this analysis we will download and analyse speed test data from Ookla. Ookla provides commercially available speed test data form their app on the three main mobile platforms, Android, iOS and Windows mobile. We will load all the raw speed test data into a database and analyse the data to perform a test on how fast the network is of the top three operators(T-Mobile, Vodafone and KPN). our test will be on download speed, upload speed and latency(or ping).
+In this document we have conducted a statistical analysis of Ookla’s NetMetrics data from speedtest.net. Ookla provides commercially available speed test data collected by their app on the three main mobile platforms, Android, iOS and Windows mobile. We will load all the raw speed test data into a database and analyse the data to perform a test on how fast the network is of the top three operators(T-Mobile, Vodafone and KPN). our test will be on download speed, upload speed and latency(or ping).
 
 The speed test data that is provided by T-Mobile is of October, November and December 2014. We will analyse and validate the data step by step. After investigation on suspicious devices, location, theoretical maximum speeds and specific dates the data is ready to be subjected to a significance test. this test will be done for all the data in the coverage area and for the biggest twenty cities in the Netherlands.
 
@@ -51,7 +51,7 @@ The result of these tests will give an answer to whether or not T-Mobile has a f
 Introduction
 ===========
 This document is a report of a statistical analysis of network speed test data. The time period we consider is Q4 2014 so the months October, November and December of 2014. 
-We perform an analysis of [Ookla](http://www.ookla.com/) speed test data on three different measures: 
+We perform an analysis of [Ookla](http://www.ookla.com/) NetMetrics Data data on three different measures: 
 
 * download speed 
 * upload speed 
@@ -70,7 +70,7 @@ This analysis is set up as follows:
 Step 1 : Data Collection 
 ======
 
-We downloaded data directly from the Ookla servers, a log-in was provided by T-Mobile. For this analysis we use a PostgreSQL database that is locally installed.
+The data was downloaded from Ookla servers by T-Mobile. For this analysis we use a PostgreSQL database that is locally installed.
 
 The data is loaded from three different files, each file resembling a mobile platform (Android,iPhone and Windows mobile). The data is loaded as-is as it was received from the Ookla server. Scripts to load this data directly into a PostgreSQL database can be found in the GitHub repository.
 
@@ -126,9 +126,9 @@ kable(as.data.frame(tbl),col.names = c('','Counts'), caption="Raw test data coun
 
 So we start this analysis with in total `r nrow(df.ad)` speed tests, which are represented as rows in the data set commercially downloaded from Ookla.
 
-Ookla Speedtest data
+Speedtest.net data
 ----------------
-Ookla designed their speed test in such a way that the results are as robust as possible, so they deliver a reproducible speed metric. Ookla’s speedtest.net is the de-facto standard for internet speed testing. According to http://www.ookla.com/netmetrics, NetMetrics is the choice of nearly every Fortune 500 ISP and Mobile Provider in the world. Please read more on the design decisions Ookla made to be able to deliver a robust and stable metric for speed test over http [here](https://support.speedtest.net/hc/en-us/articles/203845400-How-does-the-test-itself-work-How-is-the-result-calculated-).
+Ookla designed their speed test in such a way that the results are as robust as possible. Ookla’s speedtest.net is the de-facto standard for internet speed testing. According to http://www.ookla.com/netmetrics, NetMetrics is the choice of nearly every Fortune 500 ISP and Mobile Provider in the world. For more information please visit [Speeedtest.net](https://support.speedtest.net/hc/en-us).
 
 Sample test data from Ookla
 --------------------------
@@ -286,7 +286,7 @@ In this preprocessing and analysis step we validate the data on the following po
 6) We look at specific coordinates that are very frequent, depending on the explanation as for why these coordinates are used to often we remove or delete the speed tests per coordinate.
 7) We look at specific dates that have a high number of speed tests for that day.
 
-### Cleaning up the data
+## Cleaning up the data
 
 When we loaded the raw data into the database we processed the data. In the data the names for the individual operators are spelled in various ways. Also we need to map connection types to the specific technology used depending on the operating system of the device. The SQL script to clean up the data maps duplicates or spelling issues for the telecom operator names, see for details the SQL scripts on GitHub. Also we do some transformations on the raw connection codes so we can identify technology used properly.
 
@@ -377,9 +377,9 @@ This leaves `r nrow(df.clnd)` - `r nrow(df.clnd)-nrow(df.clnd.t3)` = `r nrow(df.
 
 Focus on 4G technology
 ----------------
-In the raw Ookla data the variable called 'connection_type' identifies which technology is used, this variable can be transformed into the network technology used while performing the test.
+In the raw Ookla Netmetrics data the variable called 'connection_type' identifies which technology is used, this variable can be transformed into the network technology used while performing the test.
 
-Ookla Connection type defines 4G as connection type 15 for Android. For iOS connection type 12 is LTE, and for Windows Mobile connection type 11 is LTE.
+The variable Connection type defines 4G as connection type 15 for Android. For iOS connection type 12 is LTE, and for Windows Mobile connection type 11 is LTE.
 
 Definition of 4G for Android OS from the SQL script(available on GitHub) :
 
@@ -425,10 +425,10 @@ Geographical coverage area for 4G
 For this test to be fair to all three operators, we limit the comparison of the test to areas in which all three operators (KPN, Vodafone and T-Mobile) claim to have 4G coverage at the time of the measurements. The 4G network is constantly improved and extended, every month the area T-Mobile has 4G coverage is extended. This means that some areas only got 4G coverage during Q4 2014, the period of the test. In the per city analysis, this can be seen for the specific cities that only started to have 4G in the test period. 
 
 
-### Suspicious coordinates
+### Coordinates with very high number of tests
 
 Are there any locations, or coordinates, that occur very often in the investigated 4G area?
-If we join the coordinates latitude and longitude together and look at the most frequent occurrences we see that there are indeed some coordinates that are very frequent. How do these exact same coordinates end up in the data? To understand this we need to explain a bit more on how the Ookla Speed test application gets the coordinates from a mobile device. 
+If we join the coordinates latitude and longitude together and look at the most frequent occurrences we see that there are indeed some coordinates that are very frequent. How do these exact same coordinates end up in the data? To understand this we need to explain a bit more on how the Ookla Speed test application gets the coordinates from a mobile device([read more online](https://support.speedtest.net/hc/en-us/articles/203845480-Mobile-Test-Server-Selection)). 
 There are several scenario's that can be the case: 
 1)The customer has approved the application access to the GPS coordinates of his/her device.
 2)For some reason the app cannot read the GPS coordinates from the device at the time of the test. This reason can be of different origins, the user has blocked access or we are in a building or there are other technical reasons why the exact GPS coordinates cannot be accessed.
@@ -467,7 +467,7 @@ Also see the [precision of the coordinates](https://en.wikipedia.org/wiki/Decima
 
 **So what do we do with these suspicious coordinates?**
 
-The "Unknown" location, which has coordinates (`r coord`) and is the default location from Ookla if the GPS cannot pick up the exact location during the test, we have `r n.test.at.coord` speed tests with this coordinate alone. We will exclude tests performed at this coordinate from the general analysis. Nevertheless, we will analyse this set the same way we analyse individual cities, the result for this set can be found as the last citie labeled "unknown".
+The "Unknown" location, which has coordinates (`r coord`) and is the default location from Ookla if the GPS cannot pick up the exact location during the test, we have `r n.test.at.coord` speed tests with this coordinate alone. We will exclude tests performed at this coordinate from the general analysis. Nevertheless, we will analyse this set the same way we analyse individual cities, the result for this set can be found as the last city labeled "unknown".
 
 ```{r default-location}
 # filter unkown location
@@ -491,9 +491,9 @@ df.4G <- df.4G[setdiff(rownames(df.4G),rownames(df.unkwnloc)),]
 **T-Mobile head office**
 We removed `r nrow(df.dh)` tests from coordinates "52.0666 , 4.3209" in The Hague. As they are close to the head-office of T-Mobile and indeed all tests from this location are done from a T-Mobile network.
 
-The other locations (to be precise all but these two: "52.5 , 5.75" and "52.0666 , 4.3209")  have been explained above and there is no knowledge at this point that leads to exclusion, so these tests remain in the data set.
+The other locations ("51.9167-4.5"", "52.3667-4.9"", "52.35-4.9167"")  have been explained above and there is no knowledge at this point that leads to exclusion, so these tests remain in the data set.
 
-After removing `r nrow(df.dh)` tests from coordinates "52.0666 , 4.3209" in The Hague and `r nrow(df.unkwnloc)` from the coordinates (`r coord`) the data set contains `r n4g` - `r nrow(df.dh)+nrow(df.unkwnloc)`  = `r n4g - nrow(df.dh) - nrow(df.unkwnloc)` speed tests at this point.
+After removing `r nrow(df.dh)` tests from coordinates "52.0666 , 4.3209" in The Hague and `r nrow(df.unkwnloc)` from the coordinates (“52.5-5.75”) the data set contains `r n4g` - `r nrow(df.dh)+nrow(df.unkwnloc)`  = `r n4g - nrow(df.dh) - nrow(df.unkwnloc)` speed tests at this point.
 
 
 ### Mapping test coordiantes to city boundaries
@@ -662,7 +662,7 @@ ggplot(df.4G, aes(x=download_kbps)) + geom_histogram( colour="black", fill="whit
 
 ```
 
-We plot the three histograms, one for each operator, right above each other so the horizontal axes are aligned. The red lines denotes the mean (or average) speed of all speed tests for the specific operator. If the red line is placed to the righthandside in this histogram that means the average speed for this operator is faster. The red line to the left means the avarage speed is slower. We can see that the red line of T-Mobile is farest to the right so T-Mobile apparently has the highest download speed. 
+We plot the three histograms, one for each operator, right above each other so the horizontal axes are aligned. The red lines denotes the mean (or average) speed of all speed tests for the specific operator. If the red line is placed to the righthandside in this histogram that means the average speed for this operator is faster. The red line to the left means the avarage speed is slower. We can see that the red line of T-Mobile is fastest to the right so T-Mobile apparently has the highest download speed. 
 
 ### Upload speed
 
@@ -765,7 +765,7 @@ In the box-plot for latancy we see that for T-Mobile the diamond shape(average) 
 
 Step 4: Test design
 =========
-What we want to test is if, on average, a customer that uses T-Mobile 4G Mobile Network gets a higher average speed than using KPN’s or Vodafone’s 4G Mobile Network, with all else equal. To do this we have collected thousands of Ookla NetMetrics Speedtest results taken from the three top operators (KPN, Vodafone and T-Mobile) which have been filtered as set out in the above. Now we want to compare T-Mobile with the other two operators. So we do two tests: the first is comparing T-Mobile with KPN and the second is comparing T-Mobile with Vodafone. In each test we compare all three metrics: Upload speed, Downloud speed and latency(or ping). For each operator we have a sample set available in the data. These sets are so called samples (from the Dutch population of mobile phone users) from which we calculate the sample means. Now our statistical test tests if these sample means are significantly different from one another.
+What we want to test is if, on average, a customer that uses T-Mobile 4G Mobile Network gets a higher average speed than using KPN’s or Vodafone’s 4G Mobile Network, with all else equal. To do this we have collected thousands of Ookla NetMetrics Speedtest results taken from the three top operators (KPN, Vodafone and T-Mobile) which have been filtered as set out in the above. Now we want to compare T-Mobile with the other two operators. So we do two tests: the first is comparing T-Mobile with KPN and the second is comparing T-Mobile with Vodafone. In each test we compare all three metrics: Upload speed, Download speed and latency(or ping). For each operator we have a sample set available in the data. These sets are so called samples (from the Dutch population of mobile phone users) from which we calculate the sample means. Now our statistical test tests if these sample means are significantly different from one another.
 
 In practice, the Central Limit Theorem assures us that, under a wide range of assumptions, the distributions of the two sample means being tested will themselves approach Normal distributions as the sample sizes get large, regardless (this is where the assumptions come in) of the distributions of the underlying data. As a consequence, as the sample size gets larger, the difference of the means becomes normally distributed, and the requirements necessary for the t-statistic of an unpaired t-test to have the nominal t distribution become satisfied.
 
@@ -783,7 +783,7 @@ conflevel <- 0.99
 
 So when is a test significant? And if so at what level? And furthermore can we qualify such a significant result as good or bad? To start with the last remark, all qualifications of a statistical result are subjective. One way of looking at 95% confidence is that 1 out of 20 trials (in 5% of the cases) you make a so called Type 1 error, in which you wrongly reject the null-hypothesis. So in this case, if the p-value would be 0.05(confidence level 95%) you would claim that operator x is faster then operator y while in fact they were not. In applied practice, confidence intervals are typically stated at the 95% or 99% confidence level (More on [significance](https://en.wikipedia.org/wiki/Statistical_significance) ). 
 
-In our test we will set the confidence level to be `r 100*conflevel`%, which is more strickt then 95%. This means we will reject the Null Hypothesis only if we are `r 100*conflevel` % confident we do not make a mistake. From the test result we see that in most cases the calculated  p-values are very much smaller then 1 - `r conflevel` = `r 1-conflevel`, so changes of making this type of error are even considerably smaller then the claimed confidence level of `r 100*conflevel`%. 
+In our test we will set the confidence level to be `r 100*conflevel`%, which is more strict then 95%. This means we will reject the Null Hypothesis only if we are `r 100*conflevel` % confident we do not make a mistake. From the test result we see that in most cases the calculated  p-values are very much smaller then 1 - `r conflevel` = `r 1-conflevel`, so changes of making this type of error are even considerably smaller than the claimed confidence level of `r 100*conflevel`%. 
 
 ### P-value
 In statistics, the p-value is a function of the observed sample results (a statistic) that is used for testing a statistical hypothesis. Before performing the test a threshold value is chosen, called the significance level of the test, traditionally 5% or 1% and denoted as $\alpha$. If the p-value is equal or smaller than the significance level ($\alpha$), it suggests that the observed data is inconsistent with the assumption that the null hypothesis is true, and thus that hypothesis must be rejected and the alternative hypothesis is accepted as true ( see [wikipedia](https://en.wikipedia.org/wiki/P-value)).
@@ -796,7 +796,7 @@ Confidence intervals consist of a range of values (interval) that act as good es
 
 Step 5: Test results coverage area
 ===========
-We test each operator against the other two operators so we have three tests. We put the confidence level to `r 100*conflevel` %. Our null-hypothesis is that the means are drawn from the same sample, so they are not different.
+We test T-Mobile against the other two operators so we have two tests. We put the confidence level to `r 100*conflevel` %. Our null-hypothesis is that the means are drawn from the same sample, so they are not different.
 
 In this test we use the whole data set, in the next chapter we test each individual city. 
 
@@ -861,7 +861,7 @@ This analysis has been conducted with the utmost care and to the best knowledge 
 
 Overall we can say that based on the speedtest data analysed in the investigated area the 4G network of T-Mobile outperforms both KPN and Vodafone on download speed, upload speed and latency. 
 
-From the data analysed in the investigated area the average download speed of the 4G network of T-Mobile outperforms KPN by `r round(d1/1000,2)` Mbps, which is `r r1`%. Also, from the data analysed in the investigated area the average download speed of the 4G network of T-Mobile outperforms Vodafone by `r round(d2/1000,2)` Mbps, which is `r r2`%. From table 9 & 10 above similar statements can be derived for upload speed and latency(for which smaller is better).
+From the data analysed in the investigated area the average download speed of the 4G network of T-Mobile outperforms KPN by `r round(d1/1000,2)` Mbps, which is `r r1`%. Also, from the data analysed in the investigated area the average download speed of the 4G network of T-Mobile outperforms Vodafone by `r round(d2/1000,2)` Mbps, which is `r r2`%. From table 11 & 12 above similar statements can be derived for upload speed and latency(for which smaller is better).
 
 For conclusions per individual city we refer to the section below.
 

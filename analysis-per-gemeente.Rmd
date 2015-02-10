@@ -24,7 +24,7 @@ print(xtable(df.tr.latency.g,format = "pandoc",  caption = "Comparison of means 
 
 
 
-Please note the column [Sign.] or "Significant", if this column states "No" the test is not significant at the `r 100*conflevel`% confidence level. This means there is no significant difference in means observed so the NULL Hypothesis can not be rejected. In layman's terms: You can *not conclude* that one operator has a faster 4G network then the other.
+Please note the column [Sign.] or "Significant", if this column states "No" the test is not significant at the `r 100*conflevel`% confidence level. This means there is no significant difference in means observed so the NULL Hypothesis can not be rejected. In layman's terms: You *cannot* conclude that one operator has a faster 4G network then the other on that particular 4G network speed measurement (download speed,  upload speed or latency).
 
 **Explanation of terms**
 
