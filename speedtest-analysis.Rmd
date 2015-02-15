@@ -20,7 +20,7 @@ This analysis is performed by DIKW Consulting.
 
 DIKW Consulting is a consulting firm that takes her customers on the path from Data to information to Knowledge to Wisdom. Our expertise is in the field of data logistics, data warehousing, data mining and machine learning. 
 
-T-Mobile has asked DIKW Consulting to perform this test as an independent third party. DIKW Consulting was payed to perform this test by T-mobile and has no other intentions then to perform this test by it's own high quality standards. The analysis was performed by generally accepted and approved standards and statistical methods using open source tools.
+T-Mobile has asked DIKW Consulting to perform this test as an independent third party. DIKW Consulting was paid to perform this test by T-mobile and has no other intentions then to perform this test by it's own high quality standards. The analysis was performed by generally accepted and approved standards and statistical methods using open source tools.
 
 We let the data speak for itself.
 
@@ -40,17 +40,17 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 
 Abstract
 ========
-In this document we have conducted a statistical analysis of Ookla’s NetMetrics data from speedtest.net. Ookla provides commercially available speed test data collected by their app on the three main mobile platforms, Android, iOS and Windows mobile. We will load all the raw speed test data into a database and analyse the data to perform a test on how fast the network is of the top three operators(T-Mobile, Vodafone and KPN). our test will be on download speed, upload speed and latency(or ping).
+In this document we have conducted a statistical analysis of Ookla’s NetMetrics data from speedtest.net. Ookla provides commercially available speed test data collected by their mobile app on the three main mobile platforms, Android, iOS and Windows mobile. We will load all the raw speed test data into a database, analyse the data ot the top three operators(T-Mobile, Vodafone and KPN) and perform a test on how fast their respective 4G networks are. Our test will be on download speed, upload speed and latency(or ping).
 
-The speed test data that is provided by T-Mobile is of October, November and December 2014. We will analyse and validate the data step by step. After investigation on suspicious devices, location, theoretical maximum speeds and specific dates the data is ready to be subjected to a significance test. this test will be done for all the data in the coverage area and for the biggest twenty cities in the Netherlands.
+The speed test data that is provided by Ookla’s NetMetrics data from speedtest.net and obtained by T-Mobile is of October, November and December 2014. We will analyse and validate the data step by step. After investigation on suspicious devices, such as, but not limited to, location, theoretical maximum speeds and specific dates the data is ready to be subjected to a significance test. This test will be done for all the data in the coverage area and for the biggest twenty cities in the Netherlands.
 
-The result of these tests will give an answer to whether or not T-Mobile has a faster 4G network then Vodafone and/or KPN on the three metrics upload speed, download speed and latency.
+The result of these tests will give an answer to whether or not T-Mobile has a faster 4G network than Vodafone and/or KPN on the three metrics upload speed, download speed and latency.
 
 \newpage
 
 Introduction
 ===========
-This document is a report of a statistical analysis of network speed test data. The time period we consider is Q4 2014 so the months October, November and December of 2014. 
+This document is a report of a statistical analysis of network speed test data. The time period we consider is Q4 2014 so the months October, November and December of 2014 are in scope. 
 We perform an analysis of [Ookla](http://www.ookla.com/) NetMetrics Data data on three different measures: 
 
 * download speed 
@@ -65,7 +65,9 @@ This analysis is set up as follows:
 * Step 2: Data preprocessing  
 * Step 3: Data analysis
 * Step 4: Test design
-* Step 5: Test results
+* Step 5: Test results coverage area
+
+In section 8 we provide the conclusion, and additionally the analysis and results of the Top 20 cities per city is presented in section 9.
 
 Step 1 : Data Collection 
 ======
@@ -505,9 +507,9 @@ We use city boundaries to not be influenced by exact locations of network infras
 
 Online we can get an up to date overview of network coverage for all three operators (see [here](http://www.4gdekking.nl/)).
 
-This test is not about coverage but about speed of the network. 
+This test is not about coverage but about speed of the 4G network. 
 
-T-Mobile has the least 4G coverage of the three and per end of 2014 has actual coverage in the following area:
+T-Mobile has the least 4G coverage of the three operators and per end of 2014 has actual coverage in the following area:
 
 ```{r area }
 library(png)
@@ -516,6 +518,8 @@ img <- readPNG("./img/tm-coverage-q4-2014.png")
 grid.raster(img)
 
 ```
+
+In order to do a fair comparison, we focus only on the area presented in the picture above.
 
 We do a Geo-spacial filter on the latitude and longitude coordinates provided in the data set and only keep speed tests that are in any of the above city boundaries. For the area, defined above, the following number of tests are available in the data set.
 ```{r}
@@ -526,10 +530,9 @@ kable(as.data.frame(cbind(mt,100*pt)),col.names = c('Number of tests','percentag
 
 ```
 
-Areas that only had 4G coverage by T-Mobile from November 2014 on-wards are: Apeldoorn, Voorst, Dinkelland, Enschede, Losser, Oldenzaal. 
-Areas that were hooked up by T-Mobile in December are : Eijsden, Maastricht, Margraten, Bedum, Groningen, Haren, Hoogezand-sappemeer, Leek, Loppersum, Noordenveld, Slochteren, Ten Boer, Tynaarlo
+Areas where T-Mobile announced 4G coverage in November 2014: Apeldoorn, Voorst, Dinkelland, Enschede, Losser, Oldenzaal. In December 2014 T-Mobile announced 4G coverage in : Eijsden, Maastricht, Margraten, Bedum, Groningen, Haren, Hoogezand-sappemeer, Leek, Loppersum, Noordenveld, Slochteren, Ten Boer, Tynaarlo.
 
-All other cities in the area had 4G coverage from T-Mobile on or before 1 October 2014. Vodafone and KPN claim national wide coverage in this time period.
+Naturally, in these cities, almost all of T-Mobile’s 4G speedtests occur after announcing to customers that 4G is activated, so November or December respectively, even though a very small number of tests were executed during the extension of the 4G coverage onto these cities, as 4G sites were being added (so before announcing 4G coverage in these cities; this is possible as for most 4G capable phones, the 4G network is selected automatically of available). In the same cities, KPN and Vodafone speedtests are distributed more evenly over the entire period of Q4/2014. However, this has no influence on the test results, as the test results per month do not differ substantially (please see section 4.6.4). 
 
 So we filtered the data set to include only speed tests from the coverage area, speed tests outside this area are neglected.
 The data set now contains `r n4g - nrow(df.dh) - nrow(df.unkwnloc)` - `r n4g - nrow(df.dh) - nrow(df.unkwnloc) - nrow(df.4G)` = `r nrow(df.4G)` speed tests.
@@ -563,7 +566,7 @@ df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.3),]
 
 So we remove suspicious measurements in which the **download** speed exceeded the maximum theoretical speed per individual operator. 
 
-For T-Mobile we removed `r n.max.tm` cases, for Vodafone we removed `r n.max.vf` cases and for KPN we removed `r n.max.kpn` cases, because they where above 150 M (or 225) MBps.
+For T-Mobile we removed `r n.max.tm` cases, for Vodafone we removed `r n.max.vf` cases and for KPN we removed `r n.max.kpn` cases, because they where above 150(or 225) MBps.
 
 After removing in total `r n.max.tm+n.max.vf+n.max.kpn` of these suspicious measurements, the data set contains `r nrow(df.4G)` speed tests at this point.
 
@@ -614,7 +617,7 @@ ggplot(df.cnts, aes(x=date,y=freq)) + geom_bar(width=.5,stat="identity") +
 
 ```
 
-We know that on 6 October T-Mobile introduced new improved speeds for all customers on the "Stel Samen"" rate-plans. This lead to increased number of tests. Also Vodafone allowed 2 days of free data usages for Christmas(25/26th of December). We find no disturbing or unknown peaks on a specific date. 
+We know that on 6 October T-Mobile introduced new improved speeds for all customers on the "Stel Samen"" rate-plans. This lead to increased number of tests. Also Vodafone allowed 2 days of free data usages for Christmas (25/26th of December). We find no disturbing or unknown peaks on a specific date. 
 
 ```{r}
 # table
@@ -625,6 +628,38 @@ kable(tbl,caption="Counts per operator per month")
 
 Above a count per month per operator in the 4G coverage area. This is the data set on which we conduct the remainder of the analysis.
 
+In the tables below we list the averages for download speed, upload speed and latency per operator per month. Also, here we do not see fluctuations that are suspiciously high, so the testing frequencies per month are not a factor.
+
+
+```{r}
+library(plyr)
+# add month
+df.4G$month <- format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%B")
+df.t<-ddply(df.4G,.(operator,month),summarize, mean_dwn=round(mean(download_kbps),1))
+names(df.t) <- c("Operator","Month","Average Downloadspeed(Kbps)")
+kable(df.t, caption="Average download speed(Kbps) per operator per month")
+
+```
+
+```{r}
+library(plyr)
+# add month
+df.4G$month <- format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%B")
+df.t<-ddply(df.4G,.(operator,month),summarize, mean_up=round(mean(upload_kbps),1))
+names(df.t) <- c("Operator","Month","Average Uploadspeed(Kbps)")
+kable(df.t, caption="Average upload speed(Kbps) per operator per month")
+
+```
+
+```{r}
+library(plyr)
+# add month
+df.4G$month <- format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%B")
+df.t<-ddply(df.4G,.(operator,month),summarize, mean_up=round(mean(latency),1))
+names(df.t) <- c("Operator","Month","Average Latency(ms)")
+kable(df.t, caption="Average latency(ms) per operator per month")
+
+```
 
 \newpage
 
@@ -662,7 +697,7 @@ ggplot(df.4G, aes(x=download_kbps)) + geom_histogram( colour="black", fill="whit
 
 ```
 
-We plot the three histograms, one for each operator, right above each other so the horizontal axes are aligned. The red lines denotes the mean (or average) speed of all speed tests for the specific operator. If the red line is placed to the righthandside in this histogram that means the average speed for this operator is faster. The red line to the left means the avarage speed is slower. We can see that the red line of T-Mobile is fastest to the right so T-Mobile apparently has the highest download speed. 
+We plot the three histograms, one for each operator, right above each other so the horizontal axes are aligned. The red lines denotes the mean (or average) speed of all speed tests for the specific operator. If the red line is placed to the righthandside in this histogram that means the average speed for this operator is faster. The red line to the left means the avarage speed is slower. We can see that the red line of T-Mobile is farthest to the right so T-Mobile apparently has the highest average download speed. 
 
 ### Upload speed
 
@@ -680,7 +715,7 @@ ggplot(df.4G, aes(x=upload_kbps)) + geom_histogram( colour="black", fill="white"
 
 ```
 
-We plot the three histograms, one for each operator, right above each other so the horizontal axes are aligned. The red lines denotes the mean (or average) speed of all speed tests for the specific operator. If the red line is placed to the righthandside in this histogram that means the average speed for this operator is faster. The red line to the left means the avarage speed is slower. We can see that the red line of T-Mobile is farest to the right so T-Mobile apparently has the highest upload speed as well. 
+We plot the three histograms, one for each operator, right above each other so the horizontal axes are aligned. The red lines denotes the mean (or average) speed of all speed tests for the specific operator. If the red line is placed to the righthandside in this histogram that means the average speed for this operator is faster. The red line to the left means the avarage speed is slower. We can see that the red line of T-Mobile is farthest to the right so T-Mobile apparently has the highest average upload speed as well. 
 
 ### Latency
 
@@ -699,7 +734,7 @@ ggplot(df.4G, aes(x=log(latency))) + geom_histogram( colour="black", fill="white
 
 ```
 
-For latency smaller is better, so in this plot we are looking at which operator has the smallest latency. Again we see the red lines per operator. The x axis are on a log scale to these are factors of ten. The average latency(red line) for T-Mobile is the most to the left, which means T-Mobile has the smallest latency of the three operators.
+For latency smaller is better, so in this plot we are looking at which operator has the smallest latency. Again we see the red lines per operator. The x axis are on a log scale to these are factors of ten. The average latency(red line) for T-Mobile is the most to the left, which means T-Mobile has the smallest average latency of the three operators.
 
 Box-plot
 ---------
@@ -715,7 +750,7 @@ ggplot(df.4G, aes(x=operator, y=download_kbps, fill=operator)) + geom_boxplot() 
 
 ```
 
-Also in the box-plot we see that for T-Mobile the diamond shape(average) and the thick line representing the median are higher then the same values for the other operators. So also in this box-plot for download speed we see that T-Mobile has the highest download speed.
+Also in the box-plot we see that for T-Mobile the diamond shape(average) and the thick line representing the median are higher then the same values for the other operators. So also in this box-plot for download speed we see that T-Mobile has the highest average and median download speed.
 
 If we zoom in on percentiles we can look at the fastest 10%, 5% and 1% of speed tests:
 ```{r quant-down}
@@ -736,7 +771,7 @@ ggplot(df.4G, aes(x=operator, y=upload_kbps, fill=operator)) + geom_boxplot() +
 
 ```
 
-Also in the box-plot we see that for T-Mobile the diamond shape(average) and the thick line representing the median are higher then the same values for the other operators. So also in this box-plot for upload speed we see that T-Mobile has the highest upload speed.
+Also in the box-plot we see that for T-Mobile the diamond shape(average) and the thick line representing the median are higher then the same values for the other operators. So also in this box-plot for upload speed we see that T-Mobile has the highest average and median upload speed.
 
 If we zoom in on percentiles we can look at the fastest 10%, 5% and 1% of speed tests:
 ```{r quant-up}
@@ -765,7 +800,7 @@ In the box-plot for latancy we see that for T-Mobile the diamond shape(average) 
 
 Step 4: Test design
 =========
-What we want to test is if, on average, a customer that uses T-Mobile 4G Mobile Network gets a higher average speed than using KPN’s or Vodafone’s 4G Mobile Network, with all else equal. To do this we have collected thousands of Ookla NetMetrics Speedtest results taken from the three top operators (KPN, Vodafone and T-Mobile) which have been filtered as set out in the above. Now we want to compare T-Mobile with the other two operators. So we do two tests: the first is comparing T-Mobile with KPN and the second is comparing T-Mobile with Vodafone. In each test we compare all three metrics: Upload speed, Download speed and latency(or ping). For each operator we have a sample set available in the data. These sets are so called samples (from the Dutch population of mobile phone users) from which we calculate the sample means. Now our statistical test tests if these sample means are significantly different from one another.
+What we want to test is if, on average, a customer that uses T-Mobile 4G Mobile Network gets a higher average speed(in terms of download speed, upload speed and latency) than a customer using KPN’s or Vodafone’s 4G Mobile Network, with all else equal. To do this we have collected thousands of Ookla NetMetrics Speedtest results taken from the three top operators (KPN, Vodafone and T-Mobile) which have been filtered as set out in the above to a final dataset consisting of `r nrow(df.4G)` data points. Now we want to compare T-Mobile with the other two operators. So we do two tests: the first is comparing T-Mobile with KPN and the second is comparing T-Mobile with Vodafone. In each test we compare all three metrics: Upload speed, Download speed and latency(or ping). For each operator we have a sample set available in the data. These sets are so called samples (from the Dutch population of mobile phone users) from which we calculate the sample means. Now our statistical test tests if these sample means are significantly different from one another.
 
 In practice, the Central Limit Theorem assures us that, under a wide range of assumptions, the distributions of the two sample means being tested will themselves approach Normal distributions as the sample sizes get large, regardless (this is where the assumptions come in) of the distributions of the underlying data. As a consequence, as the sample size gets larger, the difference of the means becomes normally distributed, and the requirements necessary for the t-statistic of an unpaired t-test to have the nominal t distribution become satisfied.
 
@@ -831,24 +866,25 @@ l2 <- min(as.numeric(as.character(df.tr.dwnload["T-Mobile vs Vodafone","Mean 1"]
 ```
 
 **Explanation of terms**
+
 \footnotesize
-**Sample 1** : Number of speed test samples for operator 1.
+**Sample 1**: Number of speed test samples for operator 1.
 
-**Sample 2** : Number of speed test samples for operator 2.
+**Sample 2**: Number of speed test samples for operator 2.
 
-**Mean 1** : Average speed of speed tests for operator 1 in KBps. A Higher number here means that this operator has a fast download(or upload) speed. For the latency a higher number means you have to wait longer contact webpages.
+**Mean 1**: Average speed of speed tests for operator 1 in KBps. A higher number here means that this operator has a fast download(or upload) speed. For the latency a higher number means you have to wait longer contact webpages.
 
-**Mean 2** : Average speed of speed tests for operator 2 in KBps. A Higher number here means that this operator has a fast download(or upload) speed. For the latency a higher number means you have to wait longer contact webpages.
+**Mean 2**: Average speed of speed tests for operator 2 in KBps. A higher number here means that this operator has a fast download(or upload) speed. For the latency a higher number means you have to wait longer contact webpages.
 
-**P-value** : The test statistic, for more explanation see the paragraph P-Value above
+**P-value**: The test statistic, for more explanation see the paragraph P-Value above
 
-**Sign.** : Short for Significance. We compare the test statistic with the predefined confidence level(`r conflevel`). 'Yes' means the test is significant, 'No' means the test is not significant."))
+**Sign.**: Short for Significance. We compare the test statistic with the predefined confidence level(`r conflevel`). 'Yes' means the test is significant, 'No' means the test is not significant."))
 
-**Diff(in Kbps or ms)** : Difference of the means (DoM) is the difference of Mean 1 and Mean 2(Mean 1 - Mean 2). For download and upload speeds(Kbps) big positive number here means operator 1 has a faster speed then operator 2. A big negative number means that operator 2 has a faster speed then operator 1. For latency(ms) this is the opposite, because smaller is better.
+**Diff(in Kbps or ms)**: Difference of the means (DoM) is the difference of Mean 1 and Mean 2(Mean 1 - Mean 2). For download and upload speeds(Kbps) big positive number here means operator 1 has a faster speed then operator 2. A big negative number means that operator 2 has a faster speed then operator 1. For latency(ms) this is the opposite, because smaller is better.
 
-**Conf Int** : Confidence interval consist of a range of values (interval) that act as good estimate of the *true* difference of the mean. We are `r 100*conflevel`% confident that the true value of the difference of the mean is in our confidence interval.
+**Conf Int**: Confidence interval consist of a range of values (interval) that act as good estimate of the *true* difference of the mean. We are `r 100*conflevel`% confident that the true value of the difference of the mean is in our confidence interval.
 
-**Rel(%)** : Relative difference in percentage. It is calculated as the difference of the mean divided by the slower of the two operators average speed.
+**Rel(%)**: Relative difference in percentage. It is calculated as the difference of the mean divided by the slower of the two operators average speed.
 
 \normalsize
 Looking at the tables above we see that all results are significant at $\alpha$ = `r 1-conflevel` level(`r 100*conflevel`% confidence level) and the resulting p-values are very small. This means we can reject the null-hypothesis with great confidence. Hence we can state that with `r 100*conflevel`% confidence the true difference in the means lies within the confidence interval provided in the table.
@@ -857,13 +893,13 @@ Looking at the tables above we see that all results are significant at $\alpha$ 
 
 Conclusion
 =========
-This analysis has been conducted with the utmost care and to the best knowledge of the analyst. The analysis is opensource and all code can be downloaded, reviewed and repeated from [GitHub](https://github.com/hugokoopmans/ookla-speedtest-analysis).
+This analysis has been conducted with the utmost care and to the best knowledge of the analyst (DIKW Consulting). The analysis is opensource and all code can be downloaded, reviewed and repeated from [GitHub](https://github.com/hugokoopmans/ookla-speedtest-analysis).
 
 Overall we can say that based on the speedtest data analysed in the investigated area the 4G network of T-Mobile outperforms both KPN and Vodafone on download speed, upload speed and latency. 
 
-From the data analysed in the investigated area the average download speed of the 4G network of T-Mobile outperforms KPN by `r round(d1/1000,2)` Mbps, which is `r r1`%. Also, from the data analysed in the investigated area the average download speed of the 4G network of T-Mobile outperforms Vodafone by `r round(d2/1000,2)` Mbps, which is `r r2`%. From table 11 & 12 above similar statements can be derived for upload speed and latency(for which smaller is better).
+From the data analysed in the investigated area the average download speed of the 4G network of T-Mobile outperforms KPN by `r round(d1/1000,2)` Mbps, which is `r r1`%. Also, from the data analysed in the investigated area the average download speed of the 4G network of T-Mobile outperforms Vodafone by `r round(d2/1000,2)` Mbps, which is `r r2`%. From table 14 above similar statements can be derived for upload speed.  For deriving these statements for latency, please see table 15 keeping in mind that smaller values are better. 
 
-For conclusions per individual city we refer to the section below.
+For conclusions per individual city we refer to the section below. Please keep in mind that the significance of a test per city does not influence the significance of a test over the whole 4G area. The significance of a test per city only shows if the 4G network speeds (download speed, upload speed and latency) are also significantly different on a local level, so for that city treated separately. 
 
 \newpage
 
@@ -897,6 +933,9 @@ kable(df.top20)
 # Add unknown as seperate "gemeente"
 df.top20.plus.unknown <- rbind(df.top20, c("---","Unkown Location", nrow(df.unkwnloc)))
 
+# drop month from df.4G
+df.4G$month <- NULL
+
 # add data of unknown to df
 df.4G.plus.hotspots <- rbind(df.4G,df.unkwnloc)
 
@@ -918,6 +957,9 @@ img <- readPNG("./img/top20gemeentes.png")
 From the CBS data we learn that the top 20 cities covers 4855450 out of 16779185 inhabitants. Which is `r round(100*4855450/16779185,2)` %. in terms of area this is 2412 km^2 of a total of 41545 km^2, which is `r round(100*2412/41545,2)`%. 
 
 For each city we will do the significance test separately in the next pages.
+
+Please note that T-Mobile commercially announced 4G coverage in November 2014 in Apeldoorn and Enschede and in December 2014 in Groningen and Maastricht.
+Naturally, in these cities, almost all of T-Mobile’s 4G speedtests occur after announcing to customers that 4G is activated, so November or December respectively, even though a very small number of tests were executed during the extension of the 4G coverage onto these cities, as 4G sites were being added (so before announcing 4G coverage in these cities; this is possible as for most 4G capable phones, the 4G network is selected automatically of available). In the same cities, KPN and Vodafone speedtests are distributed more evenly over the entire period of Q4/2014. However, this has no influence on the test results, as the test results per month do not differ substantially (please see section 4.6.4). 
 
 ```{r run-analysis-per-gemeente, echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE, results='asis'}
 # run the analysis for each gemeente in the df.top20
