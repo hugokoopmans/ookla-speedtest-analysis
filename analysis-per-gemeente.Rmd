@@ -33,9 +33,9 @@ Please note the column [Sign.] or "Significant", if this column states "No" the 
 
 **Sample 2**: Number of speedtest samples for operator 2.
 
-**Mean 1**: Average speed of speedtests for operator 1 in KBps. A higher number here means that this operator has a fast download(or upload) speed. For the latency a higher number means you have to wait longer contact webpages.
+**Mean 1**: Average speed of speedtests for operator 1 in KBps. A high number here means that this operator has a fast download(or upload) speed. For the latency a high number means you have to wait longer to contact webpages or servers.
 
-**Mean 2**: Average speed of speedtests for operator 2 in KBps. A higher number here means that this operator has a fast download(or upload) speed. For the latency a higher number means you have to wait longer contact webpages.
+**Mean 2**: Average speed of speedtests for operator 2 in KBps. A high number here means that this operator has a fast download(or upload) speed. For the latency a high number means you have to wait longer to contact webpages or servers.
 
 **P-value**: The test statistic, for more explanation see the paragraph P-Value above
 

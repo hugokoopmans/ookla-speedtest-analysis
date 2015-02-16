@@ -42,15 +42,15 @@ Abstract
 ========
 In this document we have conducted a statistical analysis of Ookla’s NetMetrics data from speedtest.net. Ookla provides commercially available speed test data collected by their mobile app on the three main mobile platforms, Android, iOS and Windows mobile. We will load all the raw speed test data into a database, analyse the data ot the top three operators(T-Mobile, Vodafone and KPN) and perform a test on how fast their respective 4G networks are. Our test will be on download speed, upload speed and latency(or ping).
 
-The speed test data that is provided by Ookla’s NetMetrics data from speedtest.net and obtained by T-Mobile is of October, November and December 2014. We will analyse and validate the data step by step. After investigation on suspicious devices, such as, but not limited to, location, theoretical maximum speeds and specific dates the data is ready to be subjected to a significance test. This test will be done for all the data in the coverage area and for the biggest twenty cities in the Netherlands.
+The speed test data that is provided by Ookla’s NetMetrics data from speedtest.net and obtained by T-Mobile is of October, November and December 2014. We will analyse and validate the data step by step. After investigation on suspicious testing circumstances, such as, but not limited to, devices, location, theoretical maximum speeds and specific dates the data is ready to be subjected to a significance test. This test will be done for all the data in the coverage area and for the biggest twenty cities in the Netherlands.
 
-The result of these tests will give an answer to whether or not T-Mobile has a faster 4G network than Vodafone and/or KPN on the three metrics upload speed, download speed and latency.
+The result of these tests will give an answer to whether or not T-Mobile has on average a faster 4G network than Vodafone and/or KPN, based on the three metrics upload speed, download speed and latency.
 
 \newpage
 
 Introduction
 ===========
-This document is a report of a statistical analysis of network speed test data. The time period we consider is Q4 2014 so the months October, November and December of 2014 are in scope. 
+This document is a report of a statistical analysis of 4G network speed test data. The time period we consider is Q4 2014 so the months October, November and December of 2014 are in scope. 
 We perform an analysis of [Ookla](http://www.ookla.com/) NetMetrics Data data on three different measures: 
 
 * download speed 
@@ -114,8 +114,7 @@ sink <- dbDisconnect(con)
 
 The raw data
 ---------------
-From the raw files downloaded from the Ookla server per mobile platform we load these into individual tables. 
-In the table below we count the number of speed tests per mobile platform.
+We load the raw files, downloaded from the Ookla server, into individual tables per mobile platform. In the table below we count the number of speed tests per mobile platform in Q4/2014.
 
 ```{r raw-table}
 library(knitr)
@@ -136,7 +135,7 @@ Sample test data from Ookla
 --------------------------
 Ookla has some random sample data available, this data can be used to validate our method. To validate the test result one would need the specific data of the Netherlands.
 
-A sample set of files from Ookla of the data can be found [here](http://www.ookla.com/netmetrics).
+A sample set of Ookla NetMetrics data can be found [here](http://www.ookla.com/netmetrics). The files differ per mobile platform. The file descriptors for all three mobile platforms are listed below.
 
 ### Android header descriptives
 
@@ -277,30 +276,31 @@ location_type - 0 = unknown, 1 = GPS, 2 = GeoIP
 
 Step 2: Data preprocessing
 ==============
-First we need to do some preprocessing of the data, this is done so the data from the three different mobile platforms can be compared with each other and can be merged into one table. 
+In order to compare the data from the three different mobile platforms, we need to perform basic data transformations and merge it into one table. 
+ 
+Following that, in this preprocessing and analysis step we validate the data on the following points: 1. Are there any specific individual devices that perform a suspiciously high number of tests? 
+2. We apply filters so only the tests from the three operators we are interested in remain.
+3. We apply filters so only tests done on 4G technology remain.
+4. We are only interested in the coverage area in which all three operators claim to have 4G coverage.
+5. We look at speed test results that are “too good to be true” that is, measured speeds that are above the theoretical maximum possible for that specific technology. We remove these speed tests.
+6. We look at specific coordinates that are very frequent, depending on the explanation as for why these coordinates are used to often we remove or delete the speed tests per coordinate.
+7. We look at specific dates that have a high number of speed tests for that day.
 
-In this preprocessing and analysis step we validate the data on the following points:
-1) Are there any specific individual devices that perform a suspiciously high number of tests?
-2) We apply filters so only the tests from the three operators we are interested in remain.
-3) We apply filters so only tests done on 4G technology remain.
-4) We are only interested in the coverage area in which all three operators claim to have 4G coverage
-5) We look at speed test results that are "to good to be true" that is, measured speeds that are above the theoretical maximum possible for that specific technology. We remove these speed tests.
-6) We look at specific coordinates that are very frequent, depending on the explanation as for why these coordinates are used to often we remove or delete the speed tests per coordinate.
-7) We look at specific dates that have a high number of speed tests for that day.
+After all these checks we end up with a data set that is cleaned and ready to perform a statistical  significance test on the investigated metrics.
 
-## Cleaning up the data
+## Basic data transformations
 
-When we loaded the raw data into the database we processed the data. In the data the names for the individual operators are spelled in various ways. Also we need to map connection types to the specific technology used depending on the operating system of the device. The SQL script to clean up the data maps duplicates or spelling issues for the telecom operator names, see for details the SQL scripts on GitHub. Also we do some transformations on the raw connection codes so we can identify technology used properly.
+As explained in section 3.3., the data from the three different mobile platforms comes in different formats and some basic data transformations are necessary before we can merge it into one table. 
 
-To understand the data better we do some analysis and we look at suspicious artifacts that could influence results. Typically we will look for device-id's that are used too often. Locations(specific latitude-longitude coordinates) that occur too often. We will look at the time series to see if there is a peak or pattern. We check if there are measurements that exceed the theoretical maximum speeds for the technology used.
+First of all, the names for the individual operators are spelled in various ways (e.g. ‘T-Mobile NL‘, ‘T-Mobile  NL’). Next, we need to map connection types to the specific technology used (2G, 3G or 4G) depending on the operating system of the device. For more details on these transformations, please see the SQL script on GitHub. 
 
-After all these checks we end up with a data set that is cleaned and ready to perform a statistical significance test on the investigated metrics.
+After these transformations are performed, we proceed with the checks and cleaning steps explained at in the previous section.
 
 ## Suspicious devices
 
-Are there any devices that perform tests very frequently? 
+Are there any devices that perform tests very frequently?
 
-Let's look at a frequency plot of devices that occur more then **ten** times in each month. So on the right hand side we see devices that are used very often, some of them even on an hourly basis. Obviously those devices are not in the hands of real customers so these will be removed from the data set.
+In order to investigate this, let’s look at a frequency plot of devices that occur at least **ten** times in each month. On the right hand side we see devices that are used for testing very often, some of them even on an hourly basis. Obviously those devices are not in the hands of real customers so these will be removed from the data set.
 
 ```{r freq-plot-devices}
 library(ggplot2)
@@ -335,9 +335,11 @@ tbl.dec <- tbl
 max_susp_dev = 30
 ```
 
-So we remove specific devices that test more then `r max_susp_dev` times a month. These devices are probably used by telecom professionals for testing purposes. A test on 4G cost up to 100 M Bytes per test out of the data bundle(depending on the exact speed of course!). So, 30 or more tests per month are equivalent to approximately 3GB of data usage just spend on tests alone, that is suspicious. The number 30 by itself is subjective, we could use 25 or 40 depending on what exact number of tests per device you would call suspicious.
+Based on these plots and the amount of data consumed when performing a speedtest, we decide to remove specific devices that test more than `r max_susp_dev` times a month. These devices are probably used by telecom professionals for testing purposes. The amount of data consumed per speedtest depends on the speed: the higher the speed, the more data is consumed. A test on 4G at very high speed can cost up to 100 MBytes per test out of the data bundle. So, 30 or more tests per month at high speed are equivalent to approximately 3GB of data usage just spend on tests alone and that is suspicious. The number 30 by itself is subjective, we could use 25 or 40 depending on what exact number of tests per device you would call suspicious.
 
 Actually including these are not influencing the results significantly, but we want to use real customer data as much as possible, not affected by professionals testing their own (or others) network.
+
+
 
 ```{r get-clean-data}
 # read data from 4Gdb
@@ -424,8 +426,7 @@ Most of the tests were conducted on an Android OS closely followed by iOS. Windo
 
 Geographical coverage area for 4G
 ------------------
-For this test to be fair to all three operators, we limit the comparison of the test to areas in which all three operators (KPN, Vodafone and T-Mobile) claim to have 4G coverage at the time of the measurements. The 4G network is constantly improved and extended, every month the area T-Mobile has 4G coverage is extended. This means that some areas only got 4G coverage during Q4 2014, the period of the test. In the per city analysis, this can be seen for the specific cities that only started to have 4G in the test period. 
-
+For this test to be fair to all three operators, we limit the comparison of the test to areas in which all three operators (KPN, Vodafone and T-Mobile) claim to have 4G coverage at the time of the measurements. While KPN and Vodafone already claim national 4G coverage, T-Mobile is still in the process of expanding their 4G network. Therefore, T-Mobile 4G coverage area is extended every month. This means that some areas only got 4G coverage during Q4 2014, the period of the test. In the per city analysis, this will be mentioned for the specific cities that only started to have 4G in the test period. 
 
 ### Coordinates with very high number of tests
 
@@ -526,13 +527,13 @@ We do a Geo-spacial filter on the latitude and longitude coordinates provided in
 tbl <- table(df.4G$operator)
 mt <- addmargins(tbl)
 pt <- c(as.numeric(prop.table(tbl)),1.0)
-kable(as.data.frame(cbind(mt,100*pt)),col.names = c('Number of tests','percentage'), digits = 2,caption="Number of 4G speedtests in coverage area")
+kable(as.data.frame(cbind(mt,100*pt)),col.names = c('Number of tests','percentage'), digits = 2,caption="Number of 4G speedtests in the selected coverage area.")
 
 ```
 
 Areas where T-Mobile announced 4G coverage in November 2014: Apeldoorn, Voorst, Dinkelland, Enschede, Losser, Oldenzaal. In December 2014 T-Mobile announced 4G coverage in : Eijsden, Maastricht, Margraten, Bedum, Groningen, Haren, Hoogezand-sappemeer, Leek, Loppersum, Noordenveld, Slochteren, Ten Boer, Tynaarlo.
 
-Naturally, in these cities, almost all of T-Mobile’s 4G speedtests occur after announcing to customers that 4G is activated, so November or December respectively, even though a very small number of tests were executed during the extension of the 4G coverage onto these cities, as 4G sites were being added (so before announcing 4G coverage in these cities; this is possible as for most 4G capable phones, the 4G network is selected automatically of available). In the same cities, KPN and Vodafone speedtests are distributed more evenly over the entire period of Q4/2014. However, this has no influence on the test results, as the test results per month do not differ substantially (please see section 4.6.4). 
+Naturally, in these cities, almost all of T-Mobile’s 4G speedtests occur after announcing to customers that 4G is activated, so November or December respectively, even though a very small number of tests were executed during the extension of the 4G coverage onto these cities, as 4G sites were being added (so before announcing 4G coverage in these cities; this is possible as for most 4G capable phones, the 4G network is selected automatically if available). In the same cities, KPN and Vodafone speedtests are distributed more evenly over the entire period of Q4/2014. However, this has no influence on the test results, as the test results per month do not differ substantially (please see section 4.6.4). 
 
 So we filtered the data set to include only speed tests from the coverage area, speed tests outside this area are neglected.
 The data set now contains `r n4g - nrow(df.dh) - nrow(df.unkwnloc)` - `r n4g - nrow(df.dh) - nrow(df.unkwnloc) - nrow(df.4G)` = `r nrow(df.4G)` speed tests.
@@ -872,9 +873,9 @@ l2 <- min(as.numeric(as.character(df.tr.dwnload["T-Mobile vs Vodafone","Mean 1"]
 
 **Sample 2**: Number of speed test samples for operator 2.
 
-**Mean 1**: Average speed of speed tests for operator 1 in KBps. A higher number here means that this operator has a fast download(or upload) speed. For the latency a higher number means you have to wait longer contact webpages.
+**Mean 1**: Average speed of speed tests for operator 1 in KBps. A high number here means that this operator has a fast download(or upload) speed. For the latency a high number means you have to wait longer to contact webpages or servers.
 
-**Mean 2**: Average speed of speed tests for operator 2 in KBps. A higher number here means that this operator has a fast download(or upload) speed. For the latency a higher number means you have to wait longer contact webpages.
+**Mean 2**: Average speed of speed tests for operator 2 in KBps. A high number here means that this operator has a fast download(or upload) speed. For the latency a high number means you have to wait longer to contact webpages or servers.
 
 **P-value**: The test statistic, for more explanation see the paragraph P-Value above
 
@@ -959,7 +960,7 @@ From the CBS data we learn that the top 20 cities covers 4855450 out of 16779185
 For each city we will do the significance test separately in the next pages.
 
 Please note that T-Mobile commercially announced 4G coverage in November 2014 in Apeldoorn and Enschede and in December 2014 in Groningen and Maastricht.
-Naturally, in these cities, almost all of T-Mobile’s 4G speedtests occur after announcing to customers that 4G is activated, so November or December respectively, even though a very small number of tests were executed during the extension of the 4G coverage onto these cities, as 4G sites were being added (so before announcing 4G coverage in these cities; this is possible as for most 4G capable phones, the 4G network is selected automatically of available). In the same cities, KPN and Vodafone speedtests are distributed more evenly over the entire period of Q4/2014. However, this has no influence on the test results, as the test results per month do not differ substantially (please see section 4.6.4). 
+Naturally, in these cities, almost all of T-Mobile’s 4G speedtests occur after announcing to customers that 4G is activated, so November or December respectively, even though a very small number of tests were executed during the extension of the 4G coverage onto these cities, as 4G sites were being added (so before announcing 4G coverage in these cities; this is possible as for most 4G capable phones, the 4G network is selected automatically if available). In the same cities, KPN and Vodafone speedtests are distributed more evenly over the entire period of Q4/2014. However, this has no influence on the test results, as the test results per month do not differ substantially (please see section 4.6.4). 
 
 ```{r run-analysis-per-gemeente, echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE, results='asis'}
 # run the analysis for each gemeente in the df.top20
