@@ -45,6 +45,6 @@ Please note the column [Sign.] or "Significant", if this column states "No" the 
 
 **Conf Int**: Confidence interval consist of a range of values (interval) that act as good estimate of the *true* difference of the mean. We are `r 100*conflevel`% confident that the true value of the difference of the mean is in our confidence interval.
 
-**Rel(%)**: Relative difference in percentage. It is calculated as the difference of the means divided by the slower of the two operators average speed.
+**Rel(%)**: Relative difference in percentage. It is calculated as the difference of the mean divided by the slower of the two operators average speed. If the difference is not significant (column Sign is No), this column will state NA (not applicable). The comparison rules are similar to what is explained in the Diff(in Kbps or ms).
 
 \normalsize
