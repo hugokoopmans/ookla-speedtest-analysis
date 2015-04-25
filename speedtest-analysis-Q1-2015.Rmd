@@ -88,7 +88,7 @@ All scripts to process the data are in SQL(available on GitHub) or R(included in
 
 # set global chunk options 
 library(knitr)
-opts_chunk$set(echo=FALSE, cache=FALSE, tidy=TRUE, warning=FALSE, message=FALSE, error=TRUE)
+opts_chunk$set(echo=FALSE, cache=TRUE, tidy=TRUE, warning=FALSE, message=FALSE, error=TRUE)
 
 # load functions
 source("statistical-analysis.R")
@@ -131,6 +131,7 @@ kable(as.data.frame(tbl),col.names = c('','Counts'), caption="Raw test data coun
 
 ```
 
+\newpage
 So we start this analysis with in total `r nrow(df.ad)` speed tests, which are represented as rows in the data set commercially downloaded from Ookla.
 
 Speedtest.net data
@@ -466,7 +467,7 @@ n.test.at.coord <- sort(table(str.coord),decreasing = TRUE)[1]
 
 There is a difference between Q4 2014 and Q1 2015. The coordinate (52.5-5.75) which was the default coordinate for the Netherlands in Q4 2014 and described as 'the Center of Kansas for The Netherlands' by Ookla in the [Q4/2014 Paper](https://github.com/hugokoopmans/ookla-speedtest-analysis/blob/master/speedtest-analysis-final-1.3.pdf) is no longer present in the data set. Instead, the coordinate (52.3667, 4.9) is now the most frequent one. We assumed that this is the new default coordinate for the Netherlands, when the exact location is unknown. We asked for an explanation from Ookla on this change and questions on the other frequent and rounded coordinates.
 
-Coordinate (52.3667,4.9 vs 52.5-5.75)  : Response from Ookla: *"Results are definitely coming from GEO-IP Coordinates as you know. 2. In a single day here, there is 191 results from the same IP block to this location. 3. Correct, this is similar to the 'Kansas' issue we discussed last year."*
+Coordinate (52.3667,4.9 vs 52.5-5.75)  : Response from Ookla: *Results are definitely coming from GEO-IP Coordinates as you know. 2. In a single day here, there is 191 results from the same IP block to this location. 3. Correct, this is similar to the 'Kansas' issue we discussed last year.*
 
 Coordinate (52.35-4.9167) is in Amsterdam. Question to Ookla: Can we still assume the measurements are from Amsterdam?
 Response Ookla: *Yes, GeoIP is used here. We can assume you are in Amsterdam but like any other GeoIP location result, the confidence level isn't as high as it would be if we were able to get location information directly from the device, meaning if we were able to obtain GPS instead of GEO-IP.* 
@@ -513,6 +514,7 @@ To identify the exact 4G coverage area we will use in this analysis, we use data
 From T-Mobile we received a list of cities that, at the time of testing,  have 4G coverage. From the data we can see that per city each provider has sufficient number of speed tests in the data set for the tests to be representative. 
 
 We use city boundaries to not be influenced by exact locations of network infrastructure.
+\newpage
 
 Online we can get an up to date overview of network coverage for all three operators (see [here](http://www.4gdekking.nl/)).
 
@@ -541,8 +543,8 @@ kable(as.data.frame(cbind(mt,100*pt)),col.names = c('Number of tests','percentag
 
 Areas where T-Mobile announced 4G coverage in `r QuarterNumber` `r year`: Buren, Culemborg, Geldermalsen, Scherpenzeel, Tiel, Neerijnen, Renswoude, Wijk bij Duurstede, Sint-Michielsgestel, Utrechtse Heuvelrug and Maasdonk, were added in January; Barneveld, Ede, Veenendaal, Hellevoetsluis, Bernisse, Korendijk, Cromstrijen, Westvoorne, Strijen, Moerdijk and Goeree-Overflakkee were added in February; Almelo, Borne, Deventer, Hengelo, Wierden, Zwolle, Beuningen, Druten, Ermelo, Harderwijk, Hattem, Lochem, Putten, Voorst, Wageningen, Wijchen, Zutphen, Nunspeet, Rhenen, West Maas en Waal, Oss, Overbetuwe, Neder-Betuwe and Rijssen-Holten were added in March.
 
-Naturally, in these cities, almost all of T-Mobile’s 4G speedtests occur after announcing to customers that 4G is activated, so `r lsQuarterMonths[1]`,`r lsQuarterMonths[2]` or `r lsQuarterMonths[3]` respectively. Even though a very small number of tests were executed during the extension of the 4G coverage onto these cities, as 4G sites were being added (so before announcing 4G coverage in these cities; this is possible as for most 4G capable phones, the
-\newpage 4G network is selected automatically if available). In the same cities, KPN and Vodafone speedtests are distributed more evenly over the entire period of Q4/2014. However, this has no influence on the test results, as the test results per month do not differ substantially (please see section 4.6.4). 
+Naturally, in these cities, almost all of T-Mobile’s 4G speedtests occur after announcing to customers that 4G is activated, so `r lsQuarterMonths[1]`, `r lsQuarterMonths[2]` or `r lsQuarterMonths[3]` respectively. Even though a very small number of tests were executed during the extension of the 4G coverage onto these cities, as 4G sites were being added (so before announcing 4G coverage in these cities; this is possible as for most 4G capable phones, the
+\newpage 4G network is selected automatically if available). In the same cities, KPN and Vodafone speedtests are distributed more evenly over the entire period of `r QuarterNumber`/`r year`. However, this has no influence on the test results, as the test results per month do not differ substantially (please see section 4.6.4). 
 
 So we filtered the data set to include only speed tests from the coverage area, speed tests outside this area are neglected.
 The data set now contains `r n4g - nrow(df.dh) - nrow(df.unkwnloc)` - `r n4g - nrow(df.dh) - nrow(df.unkwnloc) - nrow(df.4G)` = `r nrow(df.4G)` speed tests.
@@ -600,7 +602,7 @@ df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.6),]
 So again we remove suspicious measurements in which the **upload** speed exceeded the maximum theoretical speed per individual operator. For T-Mobile we removed `r length(rw.fltr.4)` cases, for Vodafone we removed `r length(rw.fltr.5)` cases and for KPN we removed `r length(rw.fltr.6)` cases.
 
 After removing in total `r length(rw.fltr.4)+length(rw.fltr.5)+length(rw.fltr.6)` of these suspicious measurements the data set contains `r nrow(df.4G)` speed tests at this point.
-
+\newpage
 ### Suspicious dates or times
 We count the number of tests per day for the months `r lsQuarterMonths[1]`, `r lsQuarterMonths[2] ` and `r lsQuarterMonths[3]` of `r year`. Again we are looking at any suspicious peaks in the data.
 ```{r timestamps, fig.align='center',fig.width=8}
