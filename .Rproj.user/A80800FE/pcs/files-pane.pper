@@ -1,0 +1,9 @@
+{
+    "path" : "~/git/ookla-speedtest-analysis",
+    "sortOrder" : [
+        {
+            "ascending" : false,
+            "columnIndex" : 2
+        }
+    ]
+}
