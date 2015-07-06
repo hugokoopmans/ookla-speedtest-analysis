@@ -422,7 +422,7 @@ tbl <- table(df.clnd.t3$os,df.clnd.t3$operator)
 kable(tbl)
 ```
 
-Most of the tests were conducted on an Android OS closely followed by iOS. Windows Mobile devices have limited representation in the data set. In this test we are not interested in testing the difference in performance per device or operating system.
+Most of the tests were conducted on iOS closely followed by Android OS. Windows Mobile devices have limited representation in the data set. In this test we are not interested in testing the difference in performance per device or operating system.
 
 Geographical coverage area for 4G
 ------------------
