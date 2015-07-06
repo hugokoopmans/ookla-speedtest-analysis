@@ -1,7 +1,7 @@
 ---
 title: "Independent Speed test Analysis of 4G Mobile Networks \ Performed by DIKW Consulting"
 author: "Hugo Koopmans"
-date: "07-01-2015"
+date: "17-04-2015"
 output:
   pdf_document:
     fig_height: 4
@@ -16,6 +16,12 @@ output:
 
 Colophon
 -------------
+```{r echo=FALSE }
+source("Global.R")
+
+
+
+```
 This analysis is performed by DIKW Consulting.
 
 DIKW Consulting is a consulting firm that takes her customers on the path from Data to information to Knowledge to Wisdom. Our expertise is in the field of data logistics, data warehousing, data mining and machine learning. 
@@ -42,7 +48,7 @@ Abstract
 ========
 In this document we have conducted a statistical analysis of Ookla’s NetMetrics data from speedtest.net. Ookla provides commercially available speed test data collected by their mobile app on the three main mobile platforms, Android, iOS and Windows mobile. We will load all the raw speed test data into a database, analyse the data ot the top three operators(T-Mobile, Vodafone and KPN) and perform a test on how fast their respective 4G networks are. Our test will be on download speed, upload speed and latency(or ping).
 
-The speed test data that is provided by Ookla’s NetMetrics data from speedtest.net and obtained by T-Mobile is of October, November and December 2014. We will analyse and validate the data step by step. After investigation on suspicious testing circumstances, such as, but not limited to, devices, location, theoretical maximum speeds and specific dates the data is ready to be subjected to a significance test. This test will be done for all the data in the coverage area and for the biggest twenty cities in the Netherlands.
+The speed test data that is provided by Ookla’s NetMetrics data from speedtest.net and obtained by T-Mobile is of  `r lsQuarterMonths[1]`, `r lsQuarterMonths[2]` and `r lsQuarterMonths[3]` `r year`. We will analyse and validate the data step by step. After investigation on suspicious testing circumstances, such as, but not limited to, devices, location, theoretical maximum speeds and specific dates the data is ready to be subjected to a significance test. This test will be done for all the data in the coverage area and for the biggest twenty cities in the Netherlands.
 
 The result of these tests will give an answer to whether or not T-Mobile has on average a faster 4G network than Vodafone and/or KPN, based on the three metrics upload speed, download speed and latency.
 
@@ -50,7 +56,7 @@ The result of these tests will give an answer to whether or not T-Mobile has on 
 
 Introduction
 ===========
-This document is a report of a statistical analysis of 4G network speed test data. The time period we consider is Q4 2014 so the months October, November and December of 2014 are in scope. 
+This document is a report of a statistical analysis of 4G network speed test data. The time period we consider is `r QuarterNumber` `r year` so the months `r lsQuarterMonths[1]`, `r lsQuarterMonths[2]` and `r lsQuarterMonths[3]` of `r year` are in scope. 
 We perform an analysis of [Ookla](http://www.ookla.com/) NetMetrics Data data on three different measures: 
 
 * download speed 
@@ -82,7 +88,7 @@ All scripts to process the data are in SQL(available on GitHub) or R(included in
 
 # set global chunk options 
 library(knitr)
-opts_chunk$set(echo=FALSE, cache=FALSE, tidy=TRUE, warning=FALSE, message=FALSE, error=TRUE)
+opts_chunk$set(echo=FALSE, cache=TRUE, tidy=TRUE, warning=FALSE, message=FALSE, error=TRUE)
 
 # load functions
 source("statistical-analysis.R")
@@ -102,7 +108,7 @@ drv <- dbDriver("PostgreSQL")
 
 # read data from 4Gdb
 # Full version of connection setting
-con <- dbConnect(drv, dbname="4Gdb",host="localhost",port=5432,user="4Guser",password="4Gpassword" )
+con <- dbConnect(drv, dbname=dbName,host=hostName,port=Portnumber,user=dbUserName,password=dbPassword )
 
 # all data joined
 df.ad <- dbReadTable(con, c("ookla_all_data"))
@@ -114,7 +120,7 @@ sink <- dbDisconnect(con)
 
 The raw data
 ---------------
-We load the raw files, downloaded from the Ookla server, into individual tables per mobile platform. In the table below we count the number of speed tests per mobile platform in Q4/2014.
+We load the raw files, downloaded from the Ookla server, into individual tables per mobile platform. In the table below we count the number of speed tests per mobile platform in `r QuarterNumber`/`r year`.
 
 ```{r raw-table}
 library(knitr)
@@ -125,6 +131,7 @@ kable(as.data.frame(tbl),col.names = c('','Counts'), caption="Raw test data coun
 
 ```
 
+\newpage
 So we start this analysis with in total `r nrow(df.ad)` speed tests, which are represented as rows in the data set commercially downloaded from Ookla.
 
 Speedtest.net data
@@ -306,29 +313,32 @@ In order to investigate this, let’s look at a frequency plot of devices that o
 library(ggplot2)
 
 # months
-df.ad.oct <- df.ad[as.Date(df.ad$test_date) >= as.Date('2014-10-01') & as.Date(df.ad$test_date) < as.Date('2014-11-01'),]
-df.ad.nov <- df.ad[as.Date(df.ad$test_date) >= as.Date('2014-11-01') & as.Date(df.ad$test_date) < as.Date('2014-12-01'),]
-df.ad.dec <- df.ad[as.Date(df.ad$test_date) >= as.Date('2014-12-01') & as.Date(df.ad$test_date) < as.Date('2015-01-01'),]
+df.ad.jan <- df.ad[as.Date(df.ad$test_date) >= as.Date('2015-01-01') & as.Date(df.ad$test_date) < as.Date('2015-02-01'),]
+df.ad.feb <- df.ad[as.Date(df.ad$test_date) >= as.Date('2015-02-01') & as.Date(df.ad$test_date) < as.Date('2015-03-01'),]
+df.ad.mrt <- df.ad[as.Date(df.ad$test_date) >= as.Date('2015-03-01') & as.Date(df.ad$test_date) < as.Date('2015-04-01'),]
 
 # plot grid
 par(mfrow=c(3,1),mar=c(1,1,1,1),mai=c(0.1,1,0.1,0.1)) 
 
-tbl <- table(df.ad.oct$device_id)
+#Tabel voor maand 1 
+tbl <- table(df.ad.jan$device_id)
 tbl <- sort(tbl[tbl>10]) # only keep > 10
 nms <- rep("",dim(tbl))
-barplot(tbl, names.arg = nms,main="October 2014",ylab="Number of tests",xlab="Unique devices")
-tbl.oct <- tbl
+barplot(tbl, names.arg = nms,main="January 2015",ylab="Number of tests",xlab="Unique devices")
+tbl.oct <- tbl # TO DO aanpassen maand
 
-tbl <- table(df.ad.nov$device_id)
+#Tabel voor maand 2
+tbl <- table(df.ad.feb$device_id)
 tbl <- sort(tbl[tbl>10]) # only keep > 10
 nms <- rep("",dim(tbl))
-barplot(tbl, names.arg = nms,main="November 2014",ylab="Number of tests",xlab="Unique devices")
+barplot(tbl, names.arg = nms,main="February 2015",ylab="Number of tests",xlab="Unique devices")
 tbl.nov <- tbl
 
-tbl <- table(df.ad.dec$device_id)
+#Tabel voor maand 3
+tbl <- table(df.ad.mrt$device_id)
 tbl <- sort(tbl[tbl>10]) # only keep > 10
 nms <- rep("",dim(tbl))
-barplot(tbl, names.arg = nms,main="December 2014",ylab="Number of tests",xlab="Unique devices")
+barplot(tbl, names.arg = nms,main="March 2015",ylab="Number of tests",xlab="Unique devices")
 tbl.dec <- tbl
 
 # max number of test to call a device suspicious
@@ -346,7 +356,7 @@ Actually including these are not influencing the results significantly, but we w
 # Establish connection to PoststgreSQL using RPostgreSQL
 drv <- dbDriver("PostgreSQL")
 # Full version of connection setting
-con <- dbConnect(drv, dbname="4Gdb",host="localhost",port=5432,user="4Guser",password="4Gpassword" )
+con <- dbConnect(drv, dbname=dbName,host=hostName,port=Portnumber,user=dbUserName,password=dbPassword ) 
 
 # all data joined and cleaned for suspicious devices in SQL
 df.clnd <- dbReadTable(con, c("ookla_all_data_clean"))
@@ -358,7 +368,7 @@ df.4G <- dbReadTable(con, c("datatm4gcoverage"))
 sink <- dbDisconnect(con)
 ```
 
-We identify `r sum(tbl.oct>=max_susp_dev)` devices in October, `r sum(tbl.nov>=max_susp_dev)` devices in November and`r sum(tbl.dec>=max_susp_dev)` devices in December, which in total represent `r nrow(df.ad)-nrow(df.clnd)` speed tests.
+We identify `r sum(tbl.oct>=max_susp_dev)` devices in `r lsQuarterMonths[1]`, `r sum(tbl.nov>=max_susp_dev)` devices in `r lsQuarterMonths[2]` and `r sum(tbl.dec>=max_susp_dev)` devices in `r lsQuarterMonths[3]`, which in total represent `r nrow(df.ad)-nrow(df.clnd)` speed tests.
 After filtering these devices the data set has `r nrow(df.ad)`-`r nrow(df.ad)-nrow(df.clnd)`=`r nrow(df.clnd)` speed test cases.
 
 Top three operators
@@ -375,7 +385,7 @@ df.clnd.t3 <- df.clnd[df.clnd$operator %in% ops,]
 
 ```
 
-The top three operators together are good for `r sum(tail(sort(table(df.clnd$operator)),n=3))` tests conducted all over the Netherlands in the test period of Q4 2014. We keep only speed tests from the top three operators. 
+The top three operators together are good for `r sum(tail(sort(table(df.clnd$operator)),n=3))` tests conducted all over the Netherlands in the test period of `r QuarterNumber` `r year`. We keep only speed tests from the top three operators. 
 
 This leaves `r nrow(df.clnd)` - `r nrow(df.clnd)-nrow(df.clnd.t3)` = `r nrow(df.clnd.t3)` rows in the data set.
 
@@ -422,11 +432,11 @@ tbl <- table(df.clnd.t3$os,df.clnd.t3$operator)
 kable(tbl)
 ```
 
-Most of the tests were conducted on an Android OS closely followed by iOS. Windows Mobile devices have limited representation in the data set. In this test we are not interested in testing the difference in performance per device or operating system.
+Most of the tests were conducted on iOS closely followed by Android OS. Windows Mobile devices have limited representation in the data set. In this test we are not interested in testing the difference in performance per device or operating system.
 
 Geographical coverage area for 4G
 ------------------
-For this test to be fair to all three operators, we limit the comparison of the test to areas in which all three operators (KPN, Vodafone and T-Mobile) claim to have 4G coverage at the time of the measurements. While KPN and Vodafone already claim national 4G coverage, T-Mobile is still in the process of expanding their 4G network. Therefore, T-Mobile 4G coverage area is extended every month. This means that some areas only got 4G coverage during Q4 2014, the period of the test. In the per city analysis, this will be mentioned for the specific cities that only started to have 4G in the test period. 
+For this test to be fair to all three operators, we limit the comparison of the test to areas in which all three operators (KPN, Vodafone and T-Mobile) claim to have 4G coverage at the time of the measurements. While KPN and Vodafone already claim national 4G coverage, T-Mobile is still in the process of expanding their 4G network. Therefore, T-Mobile 4G coverage area is extended every month. This means that some areas only got 4G coverage during `r QuarterNumber` `r year`, the period of the test. All of the top 20 cities in the Netherlands, which we will analyze per city,  had 4G enabled prior to `r QuarterNumber ` `r year`.
 
 ### Coordinates with very high number of tests
 
@@ -455,11 +465,11 @@ n.test.at.coord <- sort(table(str.coord),decreasing = TRUE)[1]
 
 ```
 
-To understand more on how GEO-IP works we asked some specific questions to Ookla on these issues.
+There is a difference between Q4 2014 and Q1 2015. The coordinate (52.5-5.75) which was the default coordinate for the Netherlands in Q4 2014 and described as 'the Center of Kansas for The Netherlands' by Ookla in the [Q4/2014 Paper](https://github.com/hugokoopmans/ookla-speedtest-analysis/blob/master/speedtest-analysis-final-1.3.pdf) is no longer present in the data set. Instead, the coordinate (52.3667, 4.9) is now the most frequent one. We assumed that this is the new default coordinate for the Netherlands, when the exact location is unknown. We asked for an explanation from Ookla on this change and questions on the other frequent and rounded coordinates.
 
-Coordinate (52.5-5.75) : Response from Ookla: *"The IP addresses associated with these tests show up as in the Netherlands, but that's specific as it gets regarding GEO-IP. Were assuming that 52.5, 5.75 is the Dutch equivalent of the middle of Kansas (in the US if GEO-IP Cannot be determined it defaults to the center of the US which in our case is Kansas). All it knows is it's in the Netherlands, so GeoIP specifies the center of the country."*
+Coordinate (52.3667,4.9 vs 52.5-5.75)  : Response from Ookla: *Results are definitely coming from GEO-IP Coordinates as you know. 2. In a single day here, there is 191 results from the same IP block to this location. 3. Correct, this is similar to the 'Kansas' issue we discussed last year.*
 
-Coordinates (52.3667-4.9) and (52.35-4.9167) are both in Amsterdam, but in one case the latitude is with less precision and in the other the longitude. Question to Ookla: Can we still assume the measurements are from Amsterdam? 
+Coordinate (52.35-4.9167) is in Amsterdam. Question to Ookla: Can we still assume the measurements are from Amsterdam?
 Response Ookla: *Yes, GeoIP is used here. We can assume you are in Amsterdam but like any other GeoIP location result, the confidence level isn't as high as it would be if we were able to get location information directly from the device, meaning if we were able to obtain GPS instead of GEO-IP.* 
 
 Coordinate (51.9167-4.5) is in Rotterdam. Again with limited precision, same response as above from Ookla.
@@ -469,7 +479,6 @@ Coordinate (52.0666-4.3209) is in The Hague. All cases are tests with operator e
 Also see the [precision of the coordinates](https://en.wikipedia.org/wiki/Decimal_degrees) denotes the fact that we are unsure about the exact location.
 
 **So what do we do with these suspicious coordinates?**
-
 The "Unknown" location, which has coordinates (`r coord`) and is the default location from Ookla if the GPS cannot pick up the exact location during the test, we have `r n.test.at.coord` speed tests with this coordinate alone. We will exclude tests performed at this coordinate from the general analysis. Nevertheless, we will analyse this set the same way we analyse individual cities, the result for this set can be found as the last city labeled "unknown".
 
 ```{r default-location}
@@ -494,9 +503,9 @@ df.4G <- df.4G[setdiff(rownames(df.4G),rownames(df.unkwnloc)),]
 **T-Mobile head office**
 We removed `r nrow(df.dh)` tests from coordinates "52.0666 , 4.3209" in The Hague. As they are close to the head-office of T-Mobile and indeed all tests from this location are done from a T-Mobile network.
 
-The other locations ("51.9167-4.5"", "52.3667-4.9"", "52.35-4.9167"")  have been explained above and there is no knowledge at this point that leads to exclusion, so these tests remain in the data set.
+The other locations ("51.9167-4.5", "52.35-4.9167")  have been explained above and there is no knowledge at this point that leads to exclusion, so these tests remain in the data set.
 
-After removing `r nrow(df.dh)` tests from coordinates "52.0666 , 4.3209" in The Hague and `r nrow(df.unkwnloc)` from the coordinates (“52.5-5.75”) the data set contains `r n4g` - `r nrow(df.dh)+nrow(df.unkwnloc)`  = `r n4g - nrow(df.dh) - nrow(df.unkwnloc)` speed tests at this point.
+After removing `r nrow(df.dh)` tests from coordinates "52.0666 , 4.3209" in The Hague and `r nrow(df.unkwnloc)` from the coordinates “`r coord`” the data set contains `r n4g` - `r nrow(df.dh)+nrow(df.unkwnloc)`  = `r n4g - nrow(df.dh) - nrow(df.unkwnloc)` speed tests at this point.
 
 
 ### Mapping test coordiantes to city boundaries
@@ -505,17 +514,18 @@ To identify the exact 4G coverage area we will use in this analysis, we use data
 From T-Mobile we received a list of cities that, at the time of testing,  have 4G coverage. From the data we can see that per city each provider has sufficient number of speed tests in the data set for the tests to be representative. 
 
 We use city boundaries to not be influenced by exact locations of network infrastructure.
+\newpage
 
 Online we can get an up to date overview of network coverage for all three operators (see [here](http://www.4gdekking.nl/)).
 
 This test is not about coverage but about speed of the 4G network. 
 
-T-Mobile has the least 4G coverage of the three operators and per end of 2014 has actual coverage in the following area:
+T-Mobile has the least 4G coverage of the three operators and per end of `r QuarterNumber` `r year` has actual coverage in the following area:
 
 ```{r area }
 library(png)
 library(grid)
-img <- readPNG("./img/tm-coverage-q4-2014.png")
+img <- readPNG("./img/tm-coverage-q1-2015.png")
 grid.raster(img)
 
 ```
@@ -531,9 +541,10 @@ kable(as.data.frame(cbind(mt,100*pt)),col.names = c('Number of tests','percentag
 
 ```
 
-Areas where T-Mobile announced 4G coverage in November 2014: Apeldoorn, Voorst, Dinkelland, Enschede, Losser, Oldenzaal. In December 2014 T-Mobile announced 4G coverage in : Eijsden, Maastricht, Margraten, Bedum, Groningen, Haren, Hoogezand-sappemeer, Leek, Loppersum, Noordenveld, Slochteren, Ten Boer, Tynaarlo.
+Areas where T-Mobile announced 4G coverage in `r QuarterNumber` `r year`: Buren, Culemborg, Geldermalsen, Scherpenzeel, Tiel, Neerijnen, Renswoude, Wijk bij Duurstede, Sint-Michielsgestel, Utrechtse Heuvelrug and Maasdonk, were added in January; Barneveld, Ede, Veenendaal, Hellevoetsluis, Bernisse, Korendijk, Cromstrijen, Westvoorne, Strijen, Moerdijk and Goeree-Overflakkee were added in February; Almelo, Borne, Deventer, Hengelo, Wierden, Zwolle, Beuningen, Druten, Ermelo, Harderwijk, Hattem, Lochem, Putten, Voorst, Wageningen, Wijchen, Zutphen, Nunspeet, Rhenen, West Maas en Waal, Oss, Overbetuwe, Neder-Betuwe and Rijssen-Holten were added in March.
 
-Naturally, in these cities, almost all of T-Mobile’s 4G speedtests occur after announcing to customers that 4G is activated, so November or December respectively, even though a very small number of tests were executed during the extension of the 4G coverage onto these cities, as 4G sites were being added (so before announcing 4G coverage in these cities; this is possible as for most 4G capable phones, the 4G network is selected automatically if available). In the same cities, KPN and Vodafone speedtests are distributed more evenly over the entire period of Q4/2014. However, this has no influence on the test results, as the test results per month do not differ substantially (please see section 4.6.4). 
+Naturally, in these cities, almost all of T-Mobile’s 4G speedtests occur after announcing to customers that 4G is activated, so `r lsQuarterMonths[1]`, `r lsQuarterMonths[2]` or `r lsQuarterMonths[3]` respectively. Even though a very small number of tests were executed during the extension of the 4G coverage onto these cities, as 4G sites were being added (so before announcing 4G coverage in these cities; this is possible as for most 4G capable phones, the
+\newpage 4G network is selected automatically if available). In the same cities, KPN and Vodafone speedtests are distributed more evenly over the entire period of `r QuarterNumber`/`r year`. However, this has no influence on the test results, as the test results per month do not differ substantially (please see section 4.6.4). 
 
 So we filtered the data set to include only speed tests from the coverage area, speed tests outside this area are neglected.
 The data set now contains `r n4g - nrow(df.dh) - nrow(df.unkwnloc)` - `r n4g - nrow(df.dh) - nrow(df.unkwnloc) - nrow(df.4G)` = `r nrow(df.4G)` speed tests.
@@ -591,9 +602,9 @@ df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.6),]
 So again we remove suspicious measurements in which the **upload** speed exceeded the maximum theoretical speed per individual operator. For T-Mobile we removed `r length(rw.fltr.4)` cases, for Vodafone we removed `r length(rw.fltr.5)` cases and for KPN we removed `r length(rw.fltr.6)` cases.
 
 After removing in total `r length(rw.fltr.4)+length(rw.fltr.5)+length(rw.fltr.6)` of these suspicious measurements the data set contains `r nrow(df.4G)` speed tests at this point.
-
+\newpage
 ### Suspicious dates or times
-We count the number of tests per day for the months October, November and December of 2014. Again we are looking at  any suspicious peaks in the data?
+We count the number of tests per day for the months `r lsQuarterMonths[1]`, `r lsQuarterMonths[2] ` and `r lsQuarterMonths[3]` of `r year`. Again we are looking at any suspicious peaks in the data.
 ```{r timestamps, fig.align='center',fig.width=8}
 library(ggplot2)
 library(reshape2)
@@ -618,11 +629,11 @@ ggplot(df.cnts, aes(x=date,y=freq)) + geom_bar(width=.5,stat="identity") +
 
 ```
 
-We know that on 6 October T-Mobile introduced new improved speeds for all customers on the "Stel Samen"" rate-plans. This lead to increased number of tests. Also Vodafone allowed 2 days of free data usages for Christmas (25/26th of December). We find no disturbing or unknown peaks on a specific date. 
+We find no disturbing or unknown peaks on a specific date.
 
 ```{r}
 # table
-tbl <- addmargins(table(df.4G$operator, format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%B")))
+tbl <- addmargins(table(df.4G$operator,paste(format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%m"), format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%B"))))
 kable(tbl,caption="Counts per operator per month")
 
 ```
@@ -635,13 +646,14 @@ In the tables below we list the averages for download speed, upload speed and la
 ```{r}
 library(plyr)
 # add month
-df.4G$month <- format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%B")
+df.4G$month <- format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%m")
 df.t<-ddply(df.4G,.(operator,month),summarize, mean_dwn=round(mean(download_kbps),1))
 names(df.t) <- c("Operator","Month","Average Downloadspeed(Kbps)")
 kable(df.t, caption="Average download speed(Kbps) per operator per month")
 
 ```
 
+Table below shows details for upload speed.
 ```{r}
 library(plyr)
 # add month
@@ -652,6 +664,7 @@ kable(df.t, caption="Average upload speed(Kbps) per operator per month")
 
 ```
 
+Table below shows details for latency.
 ```{r}
 library(plyr)
 # add month
@@ -795,7 +808,7 @@ ggplot(df.4G, aes(x=operator, y=log(latency), fill=operator)) + geom_boxplot() +
 
 ```
 
-In the box-plot for latancy we see that for T-Mobile the diamond shape(average) and the thick line representing the median are lower then the same values for the other operators. remember, for latancy lower is better. So in this box-plot for latency we see that T-Mobile has the lowest latency.
+In the box-plot for latancy we see that for T-Mobile the diamond shape(average) and the thick line representing the median are lower then the same values for the other operators. Remember, for latancy lower is better. So in this box-plot for latency we see that T-Mobile has the lowest latency.
 
 \newpage
 
@@ -885,7 +898,7 @@ l2 <- min(as.numeric(as.character(df.tr.dwnload["T-Mobile vs Vodafone","Mean 1"]
 
 **Conf Int**: Confidence interval consist of a range of values (interval) that act as good estimate of the *true* difference of the mean. We are `r 100*conflevel`% confident that the true value of the difference of the mean is in our confidence interval.
 
-**Rel(%)**: Relative difference in percentage. It is calculated as the difference of the mean divided by the slower of the two operators average speed.
+**Rel(%)**: Relative difference in percentage. It is calculated as the difference of the mean divided by the slower of the two operators average speed. If the difference is not significant(column Sign is No), this column will state NA(Not Applicable). The comparison rules are similar to what is explained in the Diff(in Kbps or ms).
 
 \normalsize
 Looking at the tables above we see that all results are significant at $\alpha$ = `r 1-conflevel` level(`r 100*conflevel`% confidence level) and the resulting p-values are very small. This means we can reject the null-hypothesis with great confidence. Hence we can state that with `r 100*conflevel`% confidence the true difference in the means lies within the confidence interval provided in the table.
@@ -918,7 +931,7 @@ require("RPostgreSQL", lib.loc="~/R/x86_64-pc-linux-gnu-library/3.0")
 drv <- dbDriver("PostgreSQL")
 
 # Full version of connection setting
-con <- dbConnect(drv, dbname="4Gdb",host="localhost",port=5432,user="4Guser",password="4Gpassword" )
+con <- dbConnect(drv, dbname=dbName,host=hostName,port=Portnumber,user=dbUserName,password=dbPassword )
 
 # all data joined on top 20 gemeentes
 res <- dbSendQuery(con, "SELECT gm_code,gm_naam,aantal_inwoners from top20layer")
@@ -959,10 +972,7 @@ From the CBS data we learn that the top 20 cities covers 4855450 out of 16779185
 
 For each city we will do the significance test separately in the next pages.
 
-Please note that T-Mobile commercially announced 4G coverage in November 2014 in Apeldoorn and Enschede and in December 2014 in Groningen and Maastricht.
-Naturally, in these cities, almost all of T-Mobile’s 4G speedtests occur after announcing to customers that 4G is activated, so November or December respectively, even though a very small number of tests were executed during the extension of the 4G coverage onto these cities, as 4G sites were being added (so before announcing 4G coverage in these cities; this is possible as for most 4G capable phones, the 4G network is selected automatically if available). In the same cities, KPN and Vodafone speedtests are distributed more evenly over the entire period of Q4/2014. However, this has no influence on the test results, as the test results per month do not differ substantially (please see section 4.6.4). 
-
-```{r run-analysis-per-gemeente, echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE, results='asis'}
+```{r run-analysis-per-gemeente, echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE, results='asis' }
 # run the analysis for each gemeente in the df.top20
 out = NULL
 for (i in  1:nrow(df.top20.plus.unknown)) {
