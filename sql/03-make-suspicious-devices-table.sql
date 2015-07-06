@@ -18,10 +18,10 @@ BEGIN
 END;
 $$ LANGUAGE PLPGSQL VOLATILE STRICT;
 
--- test function
-select make_suspicious_devices('2014-10-1','2014-11-1');
-select make_suspicious_devices('2014-11-1','2014-12-1');
-select make_suspicious_devices('2014-12-1','2015-1-1');
+-- run function for months in quarter
+select make_suspicious_devices('2015-04-1','2015-05-1');
+select make_suspicious_devices('2015-05-1','2015-06-1');
+select make_suspicious_devices('2015-06-1','2015-07-1');
 
 -- insert suspicious devices into table
 CREATE OR REPLACE FUNCTION MAKE_CLEAN_DATA(DATE,DATE) RETURNS INTEGER AS $$
@@ -69,6 +69,6 @@ END;
 $$ LANGUAGE PLPGSQL VOLATILE STRICT;
 
 -- tst make clean data
-select make_clean_data('2014-10-1','2014-11-1');
-select make_clean_data('2014-11-1','2014-12-1');
-select make_clean_data('2014-12-1','2015-1-1');
+select make_clean_data('2015-04-1','2015-05-1');
+select make_clean_data('2015-05-1','2015-06-1');
+select make_clean_data('2015-06-1','2015-07-1');
