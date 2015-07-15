@@ -96,7 +96,7 @@ source("statistical-analysis.R")
 
 Let's get the data and do some basic counts.
 
-```{r get-raw-data,cache=TRUE}
+```{r get-raw-data,cache=FALSE}
 
 # postgreSQL
 require("RPostgreSQL", lib.loc="~/R/x86_64-pc-linux-gnu-library/3.0")
@@ -105,7 +105,6 @@ require("RPostgreSQL", lib.loc="~/R/x86_64-pc-linux-gnu-library/3.0")
 drv <- dbDriver("PostgreSQL")
 
 # read data from 4Gdb
-# Full version of connection setting
 con <- dbConnect(drv, dbname=db.name,host=db.hostname,port=db.portnumber,user=db.username,password=db.password )
 
 # all data joined
@@ -348,10 +347,11 @@ Actually including these are not influencing the results significantly, but we w
 
 
 
-```{r get-clean-data, cache=TRUE}
+```{r get-clean-data, cache=FALSE}
 # read data from 4Gdb
 # Establish connection to PoststgreSQL using RPostgreSQL
 drv <- dbDriver("PostgreSQL")
+
 # Full version of connection setting
 con <- dbConnect(drv, dbname=db.name,host=db.hostname,port=db.portnumber,user=db.username,password=db.password ) 
 
@@ -370,7 +370,7 @@ After filtering these devices the data set has `r nrow(df.ad)`-`r nrow(df.ad)-nr
 
 Top three operators
 -------------------
-For this analysis we are only interested in the top three operators in the Netherlands. In the data set, at this point, there are `r length(levels(as.factor(df.clnd$operator)))` different operators identified. As we can see in the table below, in which we ranked the ten most used operators, most of the speed tests were performed by people using one of the three operators we are interested in. We will filter out all other operators and proceed with speed tests from these top three operators.
+For this analysis we are only interested in the top three operators in the Netherlands. In the data set, at this point, there are `r length(levels(as.factor(df.clnd$operator)))` different operators identified. As we can see in the table below, in which we ranked the ten most used operators, most of the speed tests were performed by people using one of the three operators we are interested in. There are 6534 tests with no identifiable operator. We will filter out all but the top 3 operators and proceed with speed tests from these top three operators.
 
 ```{r top-operators}
 top10 <- head(sort(table(df.clnd$operator),decreasing = TRUE),n=10)
@@ -461,11 +461,9 @@ n.test.at.coord <- sort(table(str.coord),decreasing = TRUE)[1]
 
 ```
 
-======= this paragraph can go right? =====
-There is a difference between Q4 2014 and Q1 2015. The coordinate (52.5-5.75) which was the default coordinate for the Netherlands in Q4 2014 and described as 'the Center of Kansas for The Netherlands' by Ookla in the [Q4/2014 Paper](https://github.com/hugokoopmans/ookla-speedtest-analysis/blob/master/speedtest-analysis-final-1.3.pdf) is no longer present in the data set. Instead, the coordinate (52.3667, 4.9) is now the most frequent one. We assumed that this is the new default coordinate for the Netherlands, when the exact location is unknown. We asked for an explanation from Ookla on this change and questions on the other frequent and rounded coordinates.
+We asked for an explanation from Ookla on frequent and rounded coordinates.
 
-
-Coordinate (52.3667,4.9 vs 52.5-5.75)  : Response from Ookla: *Results are definitely coming from GEO-IP Coordinates as you know. 2. In a single day here, there is 191 results from the same IP block to this location. 3. Correct, this is similar to the 'Kansas' issue we discussed last year.*
+Coordinate (52.3667,4.9)  : Response from Ookla: *Results are definitely coming from GEO-IP Coordinates as you know. 2. In a single day here, there is 191 results from the same IP block to this location. 3. Correct, this is similar to the 'Kansas' issue we discussed last year.*
 
 Coordinate (52.35-4.9167) is in Amsterdam. Question to Ookla: Can we still assume the measurements are from Amsterdam?
 Response Ookla: *Yes, GeoIP is used here. We can assume you are in Amsterdam but like any other GeoIP location result, the confidence level isn't as high as it would be if we were able to get location information directly from the device, meaning if we were able to obtain GPS instead of GEO-IP.* 
@@ -475,7 +473,6 @@ Coordinate (52.3666-4.9027) is also in Amsterdam(Waterloo plein).
 Coordinate (51.9167-4.5) is in Rotterdam. Again with limited precision, same response as above from Ookla.
 
 Coordinate (52.0666-4.3209) is in The Hague. All cases are tests with operator equal to "T-Mobile NL" also this location is close to the T-Mobile office in The Hague. We will exclude these tests as potentially being from T-Mobile employees.
-(This coordinate only has 38 cases now?)
 
 Also see the [precision of the coordinates](https://en.wikipedia.org/wiki/Decimal_degrees) denotes the fact that we are unsure about the exact location.
 
@@ -486,12 +483,25 @@ The "Unknown" location, which has coordinates (`r coord`) and is the default loc
 # filter unkown location
 df.unkwnloc <- df.4G[paste(df.4G$client_latitude,",",df.4G$client_longitude)==coord,]
 
-# filter 52.0666-4.3209
-coord <- "52.0666 , 4.3209"
-df.dh <- df.4G[paste(df.4G$client_latitude,",",df.4G$client_longitude)==coord,]
+# filter out T-Mobile office 52.0666-4.3209
+coord.tm <- "52.0666 , 4.3209"
+df.tm <- df.4G[paste(df.4G$client_latitude,",",df.4G$client_longitude)==coord.tm,]
 
-# filter unkown location from 4G as we want only known locations
-df.4G <- df.4G[setdiff(rownames(df.4G),rownames(df.dh)),]
+# filter out KPN office 52.0666 4.3479
+coord.kpn <- "52.0666 , 4.3479"
+df.kpn <- df.4G[paste(df.4G$client_latitude,",",df.4G$client_longitude)==coord.kpn,]
+
+# filter out Vodafone office 52.3767 4.9061
+coord.vf <- "52.3767 , 4.9061"
+df.vf <- df.4G[paste(df.4G$client_latitude,",",df.4G$client_longitude)==coord.vf,]
+
+# total number of tests around head offices
+df.ho.tot = nrow(df.tm)+nrow(df.kpn)+nrow(df.vf)
+
+# filter top 3 head offices location from 4G 
+df.4G <- df.4G[setdiff(rownames(df.4G),rownames(df.tm)),]
+df.4G <- df.4G[setdiff(rownames(df.4G),rownames(df.kpn)),]
+df.4G <- df.4G[setdiff(rownames(df.4G),rownames(df.vf)),]
 
 # replace ookla default location with UNKNOWN
 df.unkwnloc$gm_naam <- "Unkown Location"
@@ -501,12 +511,14 @@ df.4G <- df.4G[setdiff(rownames(df.4G),rownames(df.unkwnloc)),]
 
 ```
 
-**T-Mobile head office**
-We removed `r nrow(df.dh)` tests from coordinates "52.0666 , 4.3209" in The Hague. As they are close to the head-office of T-Mobile and indeed all tests from this location are done from a T-Mobile network.
+**Head office locations**
+We removed `r nrow(df.tm)` tests from coordinates "52.0666 , 4.3209" in The Hague. As they are close to the head-office of T-Mobile and indeed all tests from this location are done from a T-Mobile network.
+
+We did the same for locations close to the head offices of KPN and Vodafone. We removed `r nrow(df.kpn)` tests from the co-ordinates "52.0666 4.3479" (KPN office) and we removed `r nrow(df.vf)` tests from the coordinates "52.3767 4.9061"" (Vodafone office Amsterdam).
 
 The other locations ("51.9167-4.5", "52.35-4.9167")  have been explained above and there is no knowledge at this point that leads to exclusion, so these tests remain in the data set.
 
-After removing `r nrow(df.dh)` tests from coordinates "52.0666 , 4.3209" in The Hague and `r nrow(df.unkwnloc)` from the coordinates "`r coord`" the data set contains `r n4g` - `r nrow(df.dh)+nrow(df.unkwnloc)`  = `r n4g - nrow(df.dh) - nrow(df.unkwnloc)` speed tests at this point.
+After removing `r nrow(df.ho.tot)` tests from the coordinates around the head-offices of the top three providers as described in the above paragraph, together with  `r nrow(df.unkwnloc)` from the coordinates "`r coord`" the data set contains `r n4g` - `r nrow(df.ho.tot)+nrow(df.unkwnloc)`  = `r n4g - nrow(df.ho.tot) - nrow(df.unkwnloc)` speed tests at this point.
 
 
 ### Mapping test coordiantes to city boundaries
@@ -515,7 +527,6 @@ To identify the exact 4G coverage area we will use in this analysis, we use data
 From T-Mobile we received a list of cities that, at the time of testing,  have 4G coverage. From the data we can see that per city each provider has sufficient number of speed tests in the data set for the tests to be representative. 
 
 We use city boundaries to not be influenced by exact locations of network infrastructure.
-\newpage
 
 Online we can get an up to date overview of network coverage for all three operators (see [here](http://www.4gdekking.nl/)).
 
@@ -542,13 +553,13 @@ kable(as.data.frame(cbind(mt,100*pt)),col.names = c('Number of tests','percentag
 
 ```
 
-Areas where T-Mobile announced 4G coverage in `r p.QuarterNumber` `r p.Year`: Buren, Culemborg, Geldermalsen, Scherpenzeel, Tiel, Neerijnen, Renswoude, Wijk bij Duurstede, Sint-Michielsgestel, Utrechtse Heuvelrug and Maasdonk, were added in January; Barneveld, Ede, Veenendaal, Hellevoetsluis, Bernisse, Korendijk, Cromstrijen, Westvoorne, Strijen, Moerdijk and Goeree-Overflakkee were added in February; Almelo, Borne, Deventer, Hengelo, Wierden, Zwolle, Beuningen, Druten, Ermelo, Harderwijk, Hattem, Lochem, Putten, Voorst, Wageningen, Wijchen, Zutphen, Nunspeet, Rhenen, West Maas en Waal, Oss, Overbetuwe, Neder-Betuwe and Rijssen-Holten were added in March.(TODO update this list)
+Areas where T-Mobile announced 4G coverage in `r p.QuarterNumber` `r p.Year`: Helmond,Schijndel,Sint-Oedenrode,Son en Breugel, Uden, Veghel, Laarbeek, Landerd, Bernheze, Landgraaf, Brunssum, Heerlen, Kerkrade and Schinnen were added in April ; Leek, Marum, Ooststellingwerf, Opsterland, Assen, Noordenveld, Brummen, Doesburg, Doetinchem, Duiven, Rheden, Westervoort, Zevenaar, Lingewaard, Montferland, Beek, Meerssen, Nuth, Stein, Voerendaal and Valkenburg aan de Geul were added in May; Dalfsen, Hardenberg, Hellendoorn, Ommen, Raalte, Heerde, Twenterand, Olst-Wijhe, Onderbanken, Roermond, Maasgouw, Roerdalen, Echt-Susteren, Sittard-Geleen, Groesbeek, Ubbergen, Boxmeer, Grave, Mill en Sint Hubert, Bergen (L.), Gennep, Mook en Middelaar, Cuijk, Sint Anthonis, Haaksbergen, Rijnwaarden, Aalten, Millingen aan de Rijn, Winterswijk, Oude IJsselstreek, Oost Gelre, Hof van Twente, Berkelland and Bronckhorst were added in June.
+All other cities in the TMNL coverage area had 4G enabled prior to Q2 2015.
 
-Naturally, in these cities, almost all of T-Mobile’s 4G speedtests occur after announcing to customers that 4G is activated, so `r p.ListQuarterMonths[1]`, `r p.ListQuarterMonths[2]` or `r p.ListQuarterMonths[3]` respectively. Even though a very small number of tests were executed during the extension of the 4G coverage onto these cities, as 4G sites were being added (so before announcing 4G coverage in these cities; this is possible as for most 4G capable phones, the
-\newpage 4G network is selected automatically if available). In the same cities, KPN and Vodafone speedtests are distributed more evenly over the entire period of `r p.QuarterNumber`/`r p.Year`. However, this has no influence on the test results, as the test results per month do not differ substantially (please see section 4.6.4). 
+Naturally, in the cities where 4G was announced in Q2, almost all of T-Mobile’s 4G speedtests occur after announcing to customers that 4G is activated, so `r p.ListQuarterMonths[1]`, `r p.ListQuarterMonths[2]` or `r p.ListQuarterMonths[3]` respectively. Even though a very small number of tests were executed during the extension of the 4G coverage onto these cities, as 4G sites were being added (so before announcing 4G coverage in these cities; this is possible as for most 4G capable phones, the 4G network is selected automatically if available). In the same cities, KPN and Vodafone speedtests are distributed more evenly over the entire period of `r p.QuarterNumber`/`r p.Year`. However, this has no influence on the test results, as the test results per month do not differ substantially (please see section 4.6.4). 
 
 So we filtered the data set to include only speed tests from the coverage area, speed tests outside this area are neglected.
-The data set now contains `r n4g - nrow(df.dh) - nrow(df.unkwnloc)` - `r n4g - nrow(df.dh) - nrow(df.unkwnloc) - nrow(df.4G)` = `r nrow(df.4G)` speed tests.
+The data set now contains `r n4g - nrow(df.ho.tot) - nrow(df.unkwnloc)` - `r n4g - nrow(df.ho.tot) - nrow(df.unkwnloc) - nrow(df.4G)` = `r nrow(df.4G)` speed tests.
 
 ### Suspicious speeds
 
@@ -604,6 +615,7 @@ So again we remove suspicious measurements in which the **upload** speed exceede
 
 After removing in total `r length(rw.fltr.4)+length(rw.fltr.5)+length(rw.fltr.6)` of these suspicious measurements the data set contains `r nrow(df.4G)` speed tests at this point.
 \newpage
+
 ### Suspicious dates or times
 We count the number of tests per day for the months `r p.ListQuarterMonths[1]`, `r p.ListQuarterMonths[2] ` and `r p.ListQuarterMonths[3]` of `r p.Year`. Again we are looking at any suspicious peaks in the data.
 ```{r timestamps, fig.align='center',fig.width=8}
@@ -634,13 +646,13 @@ kable(tbl,caption="Counts per operator per month")
 
 Above a count per month per operator in the 4G coverage area. This is the data set on which we conduct the remainder of the analysis.
 
-In the tables below we list the averages for download speed, upload speed and latency per operator per month. Also, here we do not see fluctuations that are suspiciously high, so the testing frequencies per month are not a factor.
-
+In the tables below we list the averages for download speed, upload speed and latency per operator per month. For KPN we see a large increase in download and upload speed between April and May, as well as reduced latency. This is probably a result of KPN adding a substantial amount of sites in the large cities by activating 4G on the 1800Mhz frequency. In May 2015, KPN also [announced](http://tweakers.net/nieuws/103231/kpn-biedt-4g+-aan-in-zeven-nederlandse-steden.html) LTE-Advanced in the 7 largest cities in The Netherlands. This has an influence in the increased number of tests, shown in table 7. LTE advanced can also have a positive influence on average download speed, because it allows download speeds of up to 225Mbps, provided that the customer doing the tests has a device that can support this and the network conditions at the location allow this.
 
 ```{r}
 library(plyr)
 # add month
-df.4G$month <- paste(format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%m"),format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%B"))
+#df.4G$month <- paste(format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%m"),format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%B"))
+df.4G$month <- format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%m")
 df.t<-ddply(df.4G,.(operator,month),summarize, mean_dwn=round(mean(download_kbps),1))
 names(df.t) <- c("Operator","Month","Average Downloadspeed(Kbps)")
 kable(df.t, caption="Average download speed(Kbps) per operator per month")
@@ -669,7 +681,7 @@ kable(df.t, caption="Average latency(ms) per operator per month")
 
 Step 3: Data analysis
 =============
-So we have pre-processed the data and looked for anomalies in the data. If found, we have corrected them. Finally we are ready to compare speed test data between the three major telecom operators in Netherlands in the above defined coverage area. 
+So we have pre-processed the data and looked for anomalies in the data. If found, we have corrected them. Finally we are ready to compare speed test data between the three major telecom operators in Netherlands in the above defined coverage area for the period of `r p.QuarterNumber` `r p.Year`. 
 
 We  will analyse three different metrics:
 
@@ -763,8 +775,9 @@ names(qdwn) <- c("operator","10%","5%","1%")
 kable(qdwn, caption="Top percentiles average download speed(Kbps)")
 ```
 
-From the table we see that T-Mobile scores best in the fastest 10%,5% of download speed tests per operator.
-The top 1% is now taken over by Vodafone(@Dejan can you explain why...).
+From the table we see that T-Mobile scores best in the 10% and 5% percentile of download speed tests per operator.
+
+In the top 1% of download speed tests Vodafone scores best, followed by KPN. Both these operators they have the LTE-Advanced technology in some locations mostly in the largest cities. This technology is supported by a small number of devices. In nearly ideal radio conditions and in case the user has a suitable device, speeds higher than 225Mbps can be achieved. This is the case in less than 1% of all tests of KPN and Vodafone, but also the main reason why the top 1% for these two operators is higher than T-Mobile’s. The LTE-advanced technology does not contribute to higher upload speeds nor lower latency.
 
 ### Upload speed
 We see a box plot for each of the operators on the x axis, the vertical axis shows the speed test values in Kbps. The daimond shape represents the mean, the thick line represents the median. the black dots on the top and bottom represent extreme cases. The data is split up into quartiles, that means four equally sized proportions. The first and fourth quarter are represented as a line, the second and third as a box.
@@ -838,9 +851,9 @@ Step 5: Test results coverage area
 ===========
 We test T-Mobile against the other two operators so we have two tests. We put the confidence level to `r 100*conflevel` %. Our null-hypothesis is that the means are drawn from the same sample, so they are not different.
 
-In this test we use the whole data set, in the next chapter we test each individual city. 
+In this test we use the whole cleaned data set, in the next chapter we test each individual city. 
 
-Let see what our test results are:
+Let's see what our test results are:
 
 ```{r absolute-test-result, cache=FALSE, results='asis'}
 library(xtable)
@@ -873,6 +886,7 @@ l2 <- min(as.numeric(as.character(df.tr.dwnload["T-Mobile vs Vodafone","Mean 1"]
 **Explanation of terms**
 
 \footnotesize
+
 **Sample 1**: Number of speed test samples for operator 1.
 
 **Sample 2**: Number of speed test samples for operator 2.
@@ -907,13 +921,17 @@ From the data analysed in the investigated area the average download speed of th
 For conclusions per individual city we refer to the section below. Please keep in mind that the significance of a test per city does not influence the significance of a test over the whole 4G area. The significance of a test per city only shows if the 4G network speeds (download speed, upload speed and latency) are also significantly different on a local level, so for that city treated separately. 
 
 \newpage
+```{r topn}
+# top n
+top.n=21
+```
 
-Analysis and results Top 20 cities per city 
+Analysis and results Top `r top.n` cities per city 
 =============
-From CBS we have the following top 20 cities based on number of inhabitants("aantal inwoners"). 
+From CBS we have the following top `r top.n` cities based on number of inhabitants("aantal inwoners") from 2014. We see that Zwolle is now number twenty in favour of Maastricht(now 21). For completness we keep Maastricht in the list of cities to be analysed.  
 
 
-```{r gettop20}
+```{r get_top_n}
 
 # postgreSQL
 require("RPostgreSQL", lib.loc="~/R/x86_64-pc-linux-gnu-library/3.0")
@@ -924,19 +942,30 @@ drv <- dbDriver("PostgreSQL")
 # Full version of connection setting
 con <- dbConnect(drv, dbname=db.name,host=db.hostname,port=db.portnumber,user=db.username,password=db.password )
 
-# all data joined on top 20 gemeentes
-res <- dbSendQuery(con, "SELECT gm_code,gm_naam,aantal_inwoners from top20layer")
 
-df.top20 <- fetch(res, n = -1)
+# all data joined on top x gemeentes
+res <- dbSendQuery(con, "SELECT gm_code,gm_naam,aant_inw,opp_land from top25layer")
+df.top.25 <- fetch(res, n = -1)
+
+# top n
+df.top <- head(df.top.25,top.n)
+
+# aantal inwoners
+aantal.inw.sum <- as.integer(sum(df.top$aant_inw))
+aantal.km2.sum <- as.integer(sum(df.top$opp_land))
+
+# aantal inwoners NL 
+res <- dbSendQuery(con, "select sum(aant_inw) from nlstaging.gem_2014 where water='NEE'")
+aantal.inw.nl <- as.integer(fetch(res, n = -1))
 
 # disconnect
 sink <- dbDisconnect(con)
 
 # print table
-kable(df.top20)
+kable(df.top)
 
 # Add unknown as seperate "gemeente"
-df.top20.plus.unknown <- rbind(df.top20, c("---","Unkown Location", nrow(df.unkwnloc)))
+df.top.plus.unknown <- rbind(df.top, c("---","Unkown Location", nrow(df.unkwnloc)))
 
 # drop month from df.4G
 df.4G$month <- NULL
@@ -952,21 +981,21 @@ In more detailed analysis we investigate the top twenty "Gemeentes" based on num
 
 The coverage area of top 20 cities looks like this.
 
-```{r top20, echo=FALSE}
+```{r top, echo=FALSE}
 library(png)
 library(grid)
-img <- readPNG("./img/top20gemeentes.png")
+img <- readPNG("./img/top20gemeentes-cbs-2014.png")
  grid.raster(img)
 ```
 
-From the CBS data we learn that the top 20 cities covers 4855450 out of 16779185 inhabitants. Which is `r round(100*4855450/16779185,2)` %. in terms of area this is 2412 km^2 of a total of 41545 km^2, which is `r round(100*2412/41545,2)`%. 
+From the CBS data we learn that the top `r top.n` cities covers `r aantal.inw.sum` out of `r aantal.inw.nl` inhabitants. Which is `r round(100*aantal.inw.sum/aantal.inw.nl,2)` %. In terms of area this is `r aantal.km2.sum` km^2 of a total of 41545 km^2, which is `r round(100*aantal.km2.sum/41545,2)`%. 
 
 For each city we will do the significance test separately in the next pages.
 
 ```{r run-analysis-per-gemeente, echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE, results='asis' }
-# run the analysis for each gemeente in the df.top20
+# run the analysis for each gemeente in the df.top
 out = NULL
-for (i in  1:nrow(df.top20.plus.unknown)) {
+for (i in  1:nrow(df.top.plus.unknown)) {
 #  out = c(out, knit_expand('analysis-per-gemeente.Rmd'))
   out = c(out, knit_child('analysis-per-gemeente.Rmd'))
 }

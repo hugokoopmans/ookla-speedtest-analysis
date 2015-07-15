@@ -1,0 +1,61 @@
+\contentsline {subsection}{\numberline {0.1}Colophon}{4}{subsection.0.1}
+\contentsline {subsection}{\numberline {0.2}Code generation}{4}{subsection.0.2}
+\contentsline {section}{\numberline {1}Abstract}{5}{section.1}
+\contentsline {section}{\numberline {2}Introduction}{6}{section.2}
+\contentsline {section}{\numberline {3}Step 1 : Data Collection}{6}{section.3}
+\contentsline {subsection}{\numberline {3.1}The raw data}{6}{subsection.3.1}
+\contentsline {subsection}{\numberline {3.2}Speedtest.net data}{7}{subsection.3.2}
+\contentsline {subsection}{\numberline {3.3}Sample test data from Ookla}{7}{subsection.3.3}
+\contentsline {subsubsection}{\numberline {3.3.1}Android header descriptives}{7}{subsubsection.3.3.1}
+\contentsline {subsubsection}{\numberline {3.3.2}iOS header descriptives}{8}{subsubsection.3.3.2}
+\contentsline {subsubsection}{\numberline {3.3.3}Windows Mobile header descriptives}{8}{subsubsection.3.3.3}
+\contentsline {section}{\numberline {4}Step 2: Data preprocessing}{9}{section.4}
+\contentsline {subsection}{\numberline {4.1}Basic data transformations}{9}{subsection.4.1}
+\contentsline {subsection}{\numberline {4.2}Suspicious devices}{9}{subsection.4.2}
+\contentsline {subsection}{\numberline {4.3}Top three operators}{10}{subsection.4.3}
+\contentsline {subsection}{\numberline {4.4}Focus on 4G technology}{11}{subsection.4.4}
+\contentsline {subsection}{\numberline {4.5}Operating systems}{11}{subsection.4.5}
+\contentsline {subsection}{\numberline {4.6}Geographical coverage area for 4G}{12}{subsection.4.6}
+\contentsline {subsubsection}{\numberline {4.6.1}Coordinates with very high number of tests}{12}{subsubsection.4.6.1}
+\contentsline {subsubsection}{\numberline {4.6.2}Mapping test coordiantes to city boundaries}{13}{subsubsection.4.6.2}
+\contentsline {subsubsection}{\numberline {4.6.3}Suspicious speeds}{15}{subsubsection.4.6.3}
+\contentsline {subsubsection}{\numberline {4.6.4}Suspicious dates or times}{16}{subsubsection.4.6.4}
+\contentsline {section}{\numberline {5}Step 3: Data analysis}{18}{section.5}
+\contentsline {subsection}{\numberline {5.1}Histogram distributions}{18}{subsection.5.1}
+\contentsline {subsubsection}{\numberline {5.1.1}Download speed}{18}{subsubsection.5.1.1}
+\contentsline {subsubsection}{\numberline {5.1.2}Upload speed}{19}{subsubsection.5.1.2}
+\contentsline {subsubsection}{\numberline {5.1.3}Latency}{19}{subsubsection.5.1.3}
+\contentsline {subsection}{\numberline {5.2}Box-plot}{20}{subsection.5.2}
+\contentsline {subsubsection}{\numberline {5.2.1}Download speed}{20}{subsubsection.5.2.1}
+\contentsline {subsubsection}{\numberline {5.2.2}Upload speed}{21}{subsubsection.5.2.2}
+\contentsline {subsubsection}{\numberline {5.2.3}Latency}{21}{subsubsection.5.2.3}
+\contentsline {section}{\numberline {6}Step 4: Test design}{23}{section.6}
+\contentsline {subsection}{\numberline {6.1}Which statistical test do we need?}{23}{subsection.6.1}
+\contentsline {subsubsection}{\numberline {6.1.1}Significance}{23}{subsubsection.6.1.1}
+\contentsline {subsubsection}{\numberline {6.1.2}P-value}{23}{subsubsection.6.1.2}
+\contentsline {subsubsection}{\numberline {6.1.3}Confidence intervals}{24}{subsubsection.6.1.3}
+\contentsline {section}{\numberline {7}Step 5: Test results coverage area}{25}{section.7}
+\contentsline {section}{\numberline {8}Conclusion}{26}{section.8}
+\contentsline {section}{\numberline {9}Analysis and results Top 21 cities per city}{27}{section.9}
+\contentsline {subsection}{\numberline {9.1}Gemeente Amsterdam}{29}{subsection.9.1}
+\contentsline {subsection}{\numberline {9.2}Gemeente Rotterdam}{30}{subsection.9.2}
+\contentsline {subsection}{\numberline {9.3}Gemeente 's-Gravenhage}{31}{subsection.9.3}
+\contentsline {subsection}{\numberline {9.4}Gemeente Utrecht}{32}{subsection.9.4}
+\contentsline {subsection}{\numberline {9.5}Gemeente Eindhoven}{33}{subsection.9.5}
+\contentsline {subsection}{\numberline {9.6}Gemeente Tilburg}{34}{subsection.9.6}
+\contentsline {subsection}{\numberline {9.7}Gemeente Groningen}{35}{subsection.9.7}
+\contentsline {subsection}{\numberline {9.8}Gemeente Almere}{36}{subsection.9.8}
+\contentsline {subsection}{\numberline {9.9}Gemeente Breda}{37}{subsection.9.9}
+\contentsline {subsection}{\numberline {9.10}Gemeente Nijmegen}{38}{subsection.9.10}
+\contentsline {subsection}{\numberline {9.11}Gemeente Enschede}{39}{subsection.9.11}
+\contentsline {subsection}{\numberline {9.12}Gemeente Apeldoorn}{40}{subsection.9.12}
+\contentsline {subsection}{\numberline {9.13}Gemeente Haarlem}{41}{subsection.9.13}
+\contentsline {subsection}{\numberline {9.14}Gemeente Amersfoort}{42}{subsection.9.14}
+\contentsline {subsection}{\numberline {9.15}Gemeente Arnhem}{43}{subsection.9.15}
+\contentsline {subsection}{\numberline {9.16}Gemeente Zaanstad}{44}{subsection.9.16}
+\contentsline {subsection}{\numberline {9.17}Gemeente Haarlemmermeer}{45}{subsection.9.17}
+\contentsline {subsection}{\numberline {9.18}Gemeente 's-Hertogenbosch}{46}{subsection.9.18}
+\contentsline {subsection}{\numberline {9.19}Gemeente Zoetermeer}{47}{subsection.9.19}
+\contentsline {subsection}{\numberline {9.20}Gemeente Zwolle}{48}{subsection.9.20}
+\contentsline {subsection}{\numberline {9.21}Gemeente Maastricht}{49}{subsection.9.21}
+\contentsline {subsection}{\numberline {9.22}Gemeente Unkown Location}{50}{subsection.9.22}

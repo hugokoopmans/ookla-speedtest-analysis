@@ -18,10 +18,14 @@ BEGIN
 END;
 $$ LANGUAGE PLPGSQL VOLATILE STRICT;
 
+
+truncate table OOKLA_SUSPICIOUS_DEVICES;
 -- run function for months in quarter
 select make_suspicious_devices('2015-04-1','2015-05-1');
 select make_suspicious_devices('2015-05-1','2015-06-1');
 select make_suspicious_devices('2015-06-1','2015-07-1');
+
+select count(*) from OOKLA_SUSPICIOUS_DEVICES;
 
 -- insert suspicious devices into table
 CREATE OR REPLACE FUNCTION MAKE_CLEAN_DATA(DATE,DATE) RETURNS INTEGER AS $$
@@ -69,6 +73,7 @@ END;
 $$ LANGUAGE PLPGSQL VOLATILE STRICT;
 
 -- tst make clean data
+truncate table OOKLA_ALL_DATA_CLEAN;
 select make_clean_data('2015-04-1','2015-05-1');
 select make_clean_data('2015-05-1','2015-06-1');
 select make_clean_data('2015-06-1','2015-07-1');

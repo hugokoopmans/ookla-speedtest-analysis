@@ -1,0 +1,9 @@
+base
+knitr
+DBI
+RPostgreSQL
+ggplot2
+png
+reshape2
+plyr
+xtable
