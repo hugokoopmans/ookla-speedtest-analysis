@@ -1,14 +1,14 @@
 \newpage
 
-Gemeente `r df.top20.plus.unknown$gm_naam[i]`
+Gemeente `r df.top.plus.unknown$gm_naam[i]`
 -----------------
-The table shows the speed test analysis for gemeente `r df.top20.plus.unknown$gm_naam[i]`. For this test the confidence level is set to `r 100*conflevel`%.
+The table shows the speed test analysis for gemeente `r df.top.plus.unknown$gm_naam[i]`. For this test the confidence level is set to `r 100*conflevel`%.
 
 ``` {r echo=FALSE, cache=FALSE, results='asis'}
 
 # create temp df
 # filter specific gemeente
-df.tmp <- subset(df.4G.plus.hotspots,gm_naam == df.top20.plus.unknown$gm_naam[i])
+df.tmp <- subset(df.4G.plus.hotspots,gm_naam == df.top.plus.unknown$gm_naam[i])
 
 # do test result use sourced function
 df.tr.dwnload.g <- fn.ttest(df.tmp,"download_kbps",conflevel)
@@ -29,6 +29,7 @@ Please note the column [Sign.] or "Significant", if this column states "No" the 
 **Explanation of terms**
 
 \footnotesize
+
 **Sample 1**: Number of speedtest samples for operator 1.
 
 **Sample 2**: Number of speedtest samples for operator 2.
