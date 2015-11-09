@@ -17,8 +17,9 @@ FROM '/tmp/tm/wp.psv'
 WITH DELIMITER '|'
 CSV HEADER;
 
+-- file krijg ik van Dejan overzicht 4G gemeentes
 COPY tm4gcoverage
-FROM '/tmp/TMNL_GEMEENTE_4G.csv'
+FROM '/tmp/tm/4G_Gemeente_TMNL_2015_Q3.csv'
 WITH DELIMITER ','
 ENCODING 'WIN1258'
 CSV HEADER;

@@ -269,5 +269,5 @@ create table tm4gcoverage
 (
 Gm_code text,
 Gm_naam text,
-TMNL_HAD_4G_Q4_2014 int
+TMNL_HAD_4G_Q3_2015 int
 );

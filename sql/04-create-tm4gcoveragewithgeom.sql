@@ -12,5 +12,5 @@ tm4gcoverage t, nlstaging.gem_2014 g
 where
 g.gm_code = t.gm_code
 AND
-t.tmnl_has_4g = 1
+t.tmnl_had_4g_q3_2015 = 1
 ;

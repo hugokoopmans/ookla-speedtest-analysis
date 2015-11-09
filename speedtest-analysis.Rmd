@@ -1,7 +1,7 @@
 ---
 title: "Independent Speed test Analysis of 4G Mobile Networks \ Performed by DIKW Consulting"
 author: "Hugo Koopmans"
-date: "06-07-2015"
+date: "03-11-2015"
 output:
   pdf_document:
     fig_height: 4
@@ -86,7 +86,7 @@ All scripts to process the data are in SQL(available on GitHub) or R(included in
 
 # set global chunk options 
 library(knitr)
-opts_chunk$set(echo=FALSE, cache=TRUE, tidy=TRUE, warning=FALSE, message=FALSE, error=TRUE)
+opts_chunk$set(echo=FALSE, cache=FALSE, tidy=TRUE, warning=FALSE, message=FALSE, error=TRUE)
 
 # load functions
 source("statistical-analysis.R")
@@ -309,9 +309,9 @@ In order to investigate this, let’s look at a frequency plot of devices that o
 library(ggplot2)
 
 # months
-df.ad.m1 <- df.ad[as.Date(df.ad$test_date) >= as.Date('2015-04-01') & as.Date(df.ad$test_date) < as.Date('2015-05-01'),]
-df.ad.m2 <- df.ad[as.Date(df.ad$test_date) >= as.Date('2015-05-01') & as.Date(df.ad$test_date) < as.Date('2015-06-01'),]
-df.ad.m3 <- df.ad[as.Date(df.ad$test_date) >= as.Date('2015-06-01') & as.Date(df.ad$test_date) < as.Date('2015-07-01'),]
+df.ad.m1 <- df.ad[as.Date(df.ad$test_date) >= as.Date('2015-07-01') & as.Date(df.ad$test_date) < as.Date('2015-08-01'),]
+df.ad.m2 <- df.ad[as.Date(df.ad$test_date) >= as.Date('2015-08-01') & as.Date(df.ad$test_date) < as.Date('2015-09-01'),]
+df.ad.m3 <- df.ad[as.Date(df.ad$test_date) >= as.Date('2015-09-01') & as.Date(df.ad$test_date) < as.Date('2015-10-01'),]
 
 # plot grid
 par(mfrow=c(3,1),mar=c(1,1,1,1),mai=c(0.1,1,0.1,0.1)) 
@@ -320,21 +320,21 @@ par(mfrow=c(3,1),mar=c(1,1,1,1),mai=c(0.1,1,0.1,0.1))
 tbl <- table(df.ad.m1$device_id)
 tbl <- sort(tbl[tbl>10]) # only keep > 10
 nms <- rep("",dim(tbl))
-barplot(tbl, names.arg = nms,main="April 2015",ylab="Number of tests",xlab="Unique devices")
+barplot(tbl, names.arg = nms,main=paste(p.ListQuarterMonths[1],"2015"),ylab="Number of tests",xlab="Unique devices")
 tbl.m1 <- tbl # TO DO aanpassen maand
 
 #Tabel voor maand 2
 tbl <- table(df.ad.m2$device_id)
 tbl <- sort(tbl[tbl>10]) # only keep > 10
 nms <- rep("",dim(tbl))
-barplot(tbl, names.arg = nms,main="May 2015",ylab="Number of tests",xlab="Unique devices")
+barplot(tbl, names.arg = nms,main=paste(p.ListQuarterMonths[2],"2015"),ylab="Number of tests",xlab="Unique devices")
 tbl.m2 <- tbl
 
 #Tabel voor maand 3
 tbl <- table(df.ad.m3$device_id)
 tbl <- sort(tbl[tbl>10]) # only keep > 10
 nms <- rep("",dim(tbl))
-barplot(tbl, names.arg = nms,main="June 2015",ylab="Number of tests",xlab="Unique devices")
+barplot(tbl, names.arg = nms,main=paste(p.ListQuarterMonths[3],"2015"),ylab="Number of tests",xlab="Unique devices")
 tbl.m3 <- tbl
 
 # max number of test to call a device suspicious
@@ -370,7 +370,7 @@ After filtering these devices the data set has `r nrow(df.ad)`-`r nrow(df.ad)-nr
 
 Top three operators
 -------------------
-For this analysis we are only interested in the top three operators in the Netherlands. In the data set, at this point, there are `r length(levels(as.factor(df.clnd$operator)))` different operators identified. As we can see in the table below, in which we ranked the ten most used operators, most of the speed tests were performed by people using one of the three operators we are interested in. There are 6534 tests with no identifiable operator. We will filter out all but the top 3 operators and proceed with speed tests from these top three operators.
+For this analysis we are only interested in the top three operators in the Netherlands. In the data set, at this point, there are `r length(levels(as.factor(df.clnd$operator)))` different operators identified. As we can see in the table below, in which we ranked the ten most used operators, most of the speed tests were performed by people using one of the three operators we are interested in. There are 7423 tests with no identifiable operator. We will filter out all but the top 3 operators and proceed with speed tests from these top three operators.
 
 ```{r top-operators}
 top10 <- head(sort(table(df.clnd$operator),decreasing = TRUE),n=10)
@@ -432,7 +432,7 @@ Most of the tests were conducted on iOS closely followed by Android OS. Windows 
 
 Geographical coverage area for 4G
 ------------------
-For this test to be fair to all three operators, we limit the comparison of the test to areas in which all three operators (KPN, Vodafone and T-Mobile) claim to have 4G coverage at the time of the measurements. While KPN and Vodafone already claim national 4G coverage, T-Mobile is still in the process of expanding their 4G network. Therefore, T-Mobile 4G coverage area is extended every month. This means that some areas only got 4G coverage during `r p.QuarterNumber` `r p.Year`, the period of the test. All of the top 20 cities in the Netherlands, which we will analyze per city,  had 4G enabled prior to `r p.QuarterNumber ` `r p.Year`.
+For this test to be fair to all three operators, we limit the comparison of the test to areas in which all three operators (KPN, Vodafone and T-Mobile) claim to have 4G coverage at the time of the measurements. While KPN and Vodafone already claim national 4G coverage, T-Mobile is still in the process of expanding their 4G network. Therefore, T-Mobile 4G coverage area is extended every month. This means that some areas only got 4G coverage during `r p.QuarterNumber` `r p.Year`, the period of the test. All of the top 21 cities in the Netherlands, which we will analyze per city,  had 4G enabled prior to `r p.QuarterNumber ` `r p.Year`.
 
 ### Coordinates with very high number of tests
 
@@ -470,6 +470,8 @@ Response Ookla: *Yes, GeoIP is used here. We can assume you are in Amsterdam but
 
 Coordinate (52.3666-4.9027) is also in Amsterdam(Waterloo plein).
 
+Coordinate (52.374-4.8897) is also in Amsterdam(Spuistraat).
+
 Coordinate (51.9167-4.5) is in Rotterdam. Again with limited precision, same response as above from Ookla.
 
 Coordinate (52.0666-4.3209) is in The Hague. All cases are tests with operator equal to "T-Mobile NL" also this location is close to the T-Mobile office in The Hague. We will exclude these tests as potentially being from T-Mobile employees.
@@ -496,7 +498,7 @@ coord.vf <- "52.3767 , 4.9061"
 df.vf <- df.4G[paste(df.4G$client_latitude,",",df.4G$client_longitude)==coord.vf,]
 
 # total number of tests around head offices
-df.ho.tot = nrow(df.tm)+nrow(df.kpn)+nrow(df.vf)
+n.ho.tot = nrow(df.tm)+nrow(df.kpn)+nrow(df.vf)
 
 # filter top 3 head offices location from 4G 
 df.4G <- df.4G[setdiff(rownames(df.4G),rownames(df.tm)),]
@@ -516,9 +518,7 @@ We removed `r nrow(df.tm)` tests from coordinates "52.0666 , 4.3209" in The Hagu
 
 We did the same for locations close to the head offices of KPN and Vodafone. We removed `r nrow(df.kpn)` tests from the co-ordinates "52.0666 4.3479" (KPN office) and we removed `r nrow(df.vf)` tests from the coordinates "52.3767 4.9061"" (Vodafone office Amsterdam).
 
-The other locations ("51.9167-4.5", "52.35-4.9167")  have been explained above and there is no knowledge at this point that leads to exclusion, so these tests remain in the data set.
-
-After removing `r nrow(df.ho.tot)` tests from the coordinates around the head-offices of the top three providers as described in the above paragraph, together with  `r nrow(df.unkwnloc)` from the coordinates "`r coord`" the data set contains `r n4g` - `r nrow(df.ho.tot)+nrow(df.unkwnloc)`  = `r n4g - nrow(df.ho.tot) - nrow(df.unkwnloc)` speed tests at this point.
+After removing `r n.ho.tot` tests from the coordinates around the head-offices of the top three providers as described in the above paragraph, together with  `r nrow(df.unkwnloc)` from the coordinates "`r coord`" the data set contains `r n4g` - `r n.ho.tot + nrow(df.unkwnloc)`  = `r n4g - n.ho.tot - nrow(df.unkwnloc)` speed tests at this point.
 
 
 ### Mapping test coordiantes to city boundaries
@@ -537,7 +537,7 @@ T-Mobile has the least 4G coverage of the three operators and per end of `r p.Qu
 ```{r area }
 library(png)
 library(grid)
-img <- readPNG("./img/tm-coverage-q2-2015.png")
+img <- readPNG("./img/tm-coverage-q3-2015.png")
 grid.raster(img)
 
 ```
@@ -553,13 +553,20 @@ kable(as.data.frame(cbind(mt,100*pt)),col.names = c('Number of tests','percentag
 
 ```
 
-Areas where T-Mobile announced 4G coverage in `r p.QuarterNumber` `r p.Year`: Helmond,Schijndel,Sint-Oedenrode,Son en Breugel, Uden, Veghel, Laarbeek, Landerd, Bernheze, Landgraaf, Brunssum, Heerlen, Kerkrade and Schinnen were added in April ; Leek, Marum, Ooststellingwerf, Opsterland, Assen, Noordenveld, Brummen, Doesburg, Doetinchem, Duiven, Rheden, Westervoort, Zevenaar, Lingewaard, Montferland, Beek, Meerssen, Nuth, Stein, Voerendaal and Valkenburg aan de Geul were added in May; Dalfsen, Hardenberg, Hellendoorn, Ommen, Raalte, Heerde, Twenterand, Olst-Wijhe, Onderbanken, Roermond, Maasgouw, Roerdalen, Echt-Susteren, Sittard-Geleen, Groesbeek, Ubbergen, Boxmeer, Grave, Mill en Sint Hubert, Bergen (L.), Gennep, Mook en Middelaar, Cuijk, Sint Anthonis, Haaksbergen, Rijnwaarden, Aalten, Millingen aan de Rijn, Winterswijk, Oude IJsselstreek, Oost Gelre, Hof van Twente, Berkelland and Bronckhorst were added in June.
-All other cities in the TMNL coverage area had 4G enabled prior to Q2 2015.
+Areas where T-Mobile announced 4G coverage in `r p.QuarterNumber` `r p.Year`: 
 
-Naturally, in the cities where 4G was announced in Q2, almost all of T-Mobile’s 4G speedtests occur after announcing to customers that 4G is activated, so `r p.ListQuarterMonths[1]`, `r p.ListQuarterMonths[2]` or `r p.ListQuarterMonths[3]` respectively. Even though a very small number of tests were executed during the extension of the 4G coverage onto these cities, as 4G sites were being added (so before announcing 4G coverage in these cities; this is possible as for most 4G capable phones, the 4G network is selected automatically if available). In the same cities, KPN and Vodafone speedtests are distributed more evenly over the entire period of `r p.QuarterNumber`/`r p.Year`. However, this has no influence on the test results, as the test results per month do not differ substantially (please see section 4.6.4). 
+July: Heerenveen, Weststellingwerf, Hoogeveen, Meppel, Staphorst, Asten, Boekel, Deurne, Someren, Venray, Gemert-Bakel, Heeze-Leende, De Wolden, Westerveld and Midden-Drenthe
+ 
+August: Leeuwarden, Graft-De Rijp, Beemster, Bergen (NH.), Castricum, Edam-Volendam, Enkhuizen, Heerhugowaard, Heiloo, Den Helder, Hoorn, Langedijk, Medemblik, Opmeer, Schagen, Texel, Schermer, Zeevang, Drechterland, Stede Broec, Waterland, Beesel, Nederweert, Venlo, Weert, Horst aan de Maas, Koggenland, Leudal, Cranendonck, Peel en Maas and Hollands Kroon
+ 
+September: Emmen, Zeewolde, Skarsterlân, Lemsterland, Kampen, Noordoostpolder, Urk, Elburg, Oldebroek, Dronten, Baarle-Nassau, Etten-Leur, Rucphen, Steenbergen, Woensdrecht, Zundert, Halderberge, Roosendaal, Steenwijkerland, Alphen-Chaam and Zwartewaterland
+
+All other cities in the TMNL coverage area had 4G enabled prior to Q3 2015.
+
+Naturally, in the cities where 4G was announced in `r p.QuarterNumber`, almost all of T-Mobile’s 4G speedtests occur after announcing to customers that 4G is activated, so `r p.ListQuarterMonths[1]`, `r p.ListQuarterMonths[2]` or `r p.ListQuarterMonths[3]` respectively. Even though a very small number of tests were executed during the extension of the 4G coverage onto these cities, as 4G sites were being added (so before announcing 4G coverage in these cities; this is possible as for most 4G capable phones, the 4G network is selected automatically if available). In the same cities, KPN and Vodafone speedtests are distributed more evenly over the entire period of `r p.QuarterNumber`/`r p.Year`. However, this has no influence on the test results, as the test results per month do not differ substantially (please see section 4.6.4). 
 
 So we filtered the data set to include only speed tests from the coverage area, speed tests outside this area are neglected.
-The data set now contains `r n4g - nrow(df.ho.tot) - nrow(df.unkwnloc)` - `r n4g - nrow(df.ho.tot) - nrow(df.unkwnloc) - nrow(df.4G)` = `r nrow(df.4G)` speed tests.
+The data set now contains `r n4g - n.ho.tot - nrow(df.unkwnloc)` - `r n4g - n.ho.tot - nrow(df.unkwnloc) - nrow(df.4G)` = `r nrow(df.4G)` speed tests.
 
 ### Suspicious speeds
 
@@ -586,6 +593,10 @@ df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.1),]
 df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.2),]
 df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.3),]
 
+# filter also applied to seperate data in df.unkwnloc ...
+unk.fltr.1 <- rownames(subset(df.unkwnloc, download_kbps>150000))
+df.unkwnloc <- df.unkwnloc[setdiff(rownames(df.unkwnloc),unk.fltr.1),]
+
 ```
 
 So we remove suspicious measurements in which the **download** speed exceeded the maximum theoretical speed per individual operator. 
@@ -609,11 +620,45 @@ df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.4),]
 df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.5),]
 df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.6),]
 
+# filter also applied to seperate data in df.unkwnloc ...
+unk.fltr.2 <- rownames(subset(df.unkwnloc, upload_kbps>50000))
+df.unkwnloc <- df.unkwnloc[setdiff(rownames(df.unkwnloc),unk.fltr.2),]
+
 ```
 
 So again we remove suspicious measurements in which the **upload** speed exceeded the maximum theoretical speed per individual operator. For T-Mobile we removed `r length(rw.fltr.4)` cases, for Vodafone we removed `r length(rw.fltr.5)` cases and for KPN we removed `r length(rw.fltr.6)` cases.
 
 After removing in total `r length(rw.fltr.4)+length(rw.fltr.5)+length(rw.fltr.6)` of these suspicious measurements the data set contains `r nrow(df.4G)` speed tests at this point.
+
+Let's look at **latency** also. We see the maximum value in latecy measurements is 65535, which is the maximum value for a variable of type unsigned short. This is clearly an outlier and should be removed. 
+
+Response Ookla: *"That issue was resolved in the latest Android release. As more and more clients download the latest version of the app, this will become less and less obvious. Just filter out for now until its cleaned up in the files."*
+
+```{r susp-latency-speed}
+# count number of cases that exceed theoretical max speed
+n.l.mx.tm <- nrow(subset(df.4G, latency==65535 & operator == "T-Mobile NL"))
+n.l.mx.vf <- nrow(subset(df.4G, latency==65535 & operator == "Vodafone NL"))
+n.l.mx.kpn <-nrow(subset(df.4G, latency==65535 & operator == "KPN NL"))
+
+# create filters 
+rw.fltr.7 <- rownames(subset(df.4G, latency==65535 & operator == "T-Mobile NL"))
+rw.fltr.8 <- rownames(subset(df.4G, latency==65535 & operator == "Vodafone NL"))
+rw.fltr.9 <- rownames(subset(df.4G, latency==65535 & operator == "KPN NL"))
+
+# filter out these extremes
+df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.7),]
+df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.8),]
+df.4G <- df.4G[setdiff(rownames(df.4G),rw.fltr.9),]
+
+# filter also applied to seperate data in df.unkwnloc ...
+unk.fltr.3 <- rownames(subset(df.unkwnloc, latency==65535))
+df.unkwnloc <- df.unkwnloc[setdiff(rownames(df.unkwnloc),unk.fltr.3),]
+
+```
+
+So we remove `r n.l.mx.tm` measurements from the T-Mobile set , `r n.l.mx.kpn` measurements from the KPN set and `r n.l.mx.vf` measurements from the Vodafone set. After this the data set contains `r nrow(df.4G)` speed tests at this point.
+
+
 \newpage
 
 ### Suspicious dates or times
@@ -635,7 +680,7 @@ ggplot(df.cnts, aes(x=date,y=freq)) + geom_bar(width=.5,stat="identity") +
 
 ```
 
-We find no disturbing or unknown peaks on a specific date.
+We find no disturbing or unknown peaks on a specific date, except for Vodafone on the 18/08/2015. This can be explained by the network incident that Vodafone had on this date, causing customers to experience slow or no internet. The problem was fixed the same day and it was communicated to customers, which is a stimulus to test.
 
 ```{r}
 # table
@@ -646,16 +691,20 @@ kable(tbl,caption="Counts per operator per month")
 
 Above a count per month per operator in the 4G coverage area. This is the data set on which we conduct the remainder of the analysis.
 
-In the tables below we list the averages for download speed, upload speed and latency per operator per month. For KPN we see a large increase in download and upload speed between April and May, as well as reduced latency. This is probably a result of KPN adding a substantial amount of sites in the large cities by activating 4G on the 1800Mhz frequency. In May 2015, KPN also [announced](http://tweakers.net/nieuws/103231/kpn-biedt-4g+-aan-in-zeven-nederlandse-steden.html) LTE-Advanced in the 7 largest cities in The Netherlands. This has an influence in the increased number of tests, shown in table 7. LTE advanced can also have a positive influence on average download speed, because it allows download speeds of up to 225Mbps, provided that the customer doing the tests has a device that can support this and the network conditions at the location allow this.
+In the tables below we list the averages for download speed, upload speed and latency per operator per month. For KPN we see a large increase in download and upload speed between August and September, as well as reduced latency. This is probably a result of KPN adding a substantial amount of sites in the large cities by activating 4G on the 1800Mhz frequency. This also enables them to activate LTE Advanced on those locations, which has an additional positive influence on average download speed, because it allows download speeds of up to 225Mbps, provided that the customer doing the tests has a device that can support this and the network conditions at the location allow this.
 
 ```{r}
 library(plyr)
 # add month
-#df.4G$month <- paste(format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%m"),format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%B"))
-df.4G$month <- format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%m")
+df.4G$month <- paste(format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%m"),format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%B"))
+#df.4G$month <- format(as.Date(df.4G$test_date, "%Y-%m-%d"), "%m")
 df.t<-ddply(df.4G,.(operator,month),summarize, mean_dwn=round(mean(download_kbps),1))
-names(df.t) <- c("Operator","Month","Average Downloadspeed(Kbps)")
-kable(df.t, caption="Average download speed(Kbps) per operator per month")
+
+# reshape df to matrix
+library(reshape)
+df.t2 <- acast(df.t,operator ~ month)
+
+kable(df.t2, caption="Average download speed(Kbps) per operator per month")
 
 ```
 
@@ -663,8 +712,10 @@ Table below shows details for upload speed.
 ```{r}
 library(plyr)
 df.t<-ddply(df.4G,.(operator,month),summarize, mean_up=round(mean(upload_kbps),1))
-names(df.t) <- c("Operator","Month","Average Uploadspeed(Kbps)")
-kable(df.t, caption="Average upload speed(Kbps) per operator per month")
+# reshape df to matrix
+df.t2 <- acast(df.t,operator ~ month)
+
+kable(df.t2, caption="Average upload speed(Kbps) per operator per month")
 
 ```
 
@@ -672,8 +723,12 @@ Table below shows details for latency.
 ```{r}
 library(plyr)
 df.t<-ddply(df.4G,.(operator,month),summarize, mean_up=round(mean(latency),1))
-names(df.t) <- c("Operator","Month","Average Latency(ms)")
-kable(df.t, caption="Average latency(ms) per operator per month")
+
+# reshape df to matrix
+library(reshape)
+df.t2 <- acast(df.t,operator ~ month)
+
+kable(df.t2, caption="Average latency(ms) per operator per month")
 
 ```
 
@@ -699,7 +754,7 @@ A histogram is a graphical representation of the distribution of data. It is an 
 
 ### Download speed
 
-In the histogram below we see download speed in KBps on the horizontal axis. The number of test cases are plotted as bars, on the vertical axis we see the count of the number of speed tests in a specific bin (or range). The histogram gives a visual representation of the distribution of the data.
+In the histogram below we see download speed in Kbps on the horizontal axis. The number of test cases are plotted as bars, on the vertical axis we see the count of the number of speed tests in a specific bin (or range). The histogram gives a visual representation of the distribution of the data.
 
 ```{r downloadspeed, fig.cap='Histogram download speed per operator', fig.height=3, fig.pos='H' }
 library(plyr)
@@ -708,6 +763,8 @@ cdf <- ddply(df.4G, "operator", summarise, download_kbps.mean=mean(download_kbps
 # With mean lines, using cdf from above
 ggplot(df.4G, aes(x=download_kbps)) + geom_histogram( colour="black", fill="white", binwidth = 5000) + 
     facet_grid(operator ~ .) +
+    xlab("Download speed (Kbps)") +
+    ylab("Number of speedtests (count)") +
     geom_vline(data=cdf, aes(xintercept=download_kbps.mean),
                linetype="solid", size=1, colour="red")
 
@@ -717,7 +774,7 @@ We plot the three histograms, one for each operator, right above each other so t
 
 ### Upload speed
 
-In the histogram below we see upload speed in KBps on the horizontal axis. The number of test cases are plotted as bars, on the vertical axis we see the count of the number of speed tests in a specific bin (or range). The histogram gives a visual representation of the distribution of the data.
+In the histogram below we see upload speed in Kbps on the horizontal axis. The number of test cases are plotted as bars, on the vertical axis we see the count of the number of speed tests in a specific bin (or range). The histogram gives a visual representation of the distribution of the data.
 
 ```{r uploadspeed, fig.cap='Histogram upload speed per operator', fig.height=3 }
 library(plyr)
@@ -726,6 +783,8 @@ cdf <- ddply(df.4G, "operator", summarise, upload_kbps.mean=mean(upload_kbps))
 # With mean lines, using cdf from above
 ggplot(df.4G, aes(x=upload_kbps)) + geom_histogram( colour="black", fill="white", binwidth = 1000) + 
     facet_grid(operator ~ .) +
+    xlab("Upload speed (Kbps)") +
+    ylab("Number of speedtests (count)") +
     geom_vline(data=cdf, aes(xintercept=upload_kbps.mean),
                linetype="solid", size=1, colour="red")
 
@@ -735,7 +794,7 @@ We plot the three histograms, one for each operator, right above each other so t
 
 ### Latency
 
-In the histogram below we see log(latency) speed on the horizontal axis. The log transformation makes the figure more readable. For the reader, the horizontal axis shows powers of 10. So 2 actually means $10^{2}$ = 100 and 5 actually stands for $10^{5}$ = 10.000 . The number of test cases are plotted as bars, on the vertical axis we see the count of the number of speed tests in a specific range. For latency we take the log so the outlines scale and we can have a look at the shape of the distribution.
+In the histogram below we see latency speed on the horizontal axis on a logaritmic scale. The log transformation makes the figure more readable. The number of test cases are plotted as bars, on the vertical axis we see the count of the number of speed tests in a specific range. For latency we take the log so the outlines scale and we can have a look at the shape of the distribution.
 
 ```{r latency, fig.cap='Histogram latency per operator', fig.height=3 }
 library(plyr)
@@ -743,14 +802,17 @@ library(plyr)
 cdf <- ddply(df.4G, "operator", summarise, latency.mean=mean(latency))
 
 # With mean lines, using cdf from above
-ggplot(df.4G, aes(x=log(latency))) + geom_histogram( colour="black", fill="white", binwidth = 0.1) + 
+ggplot(df.4G, aes(x=latency)) + geom_histogram( colour="black", fill="white", binwidth = 0.02) +  
+    scale_x_log10(limits=c(10, 1000)) +
     facet_grid(operator ~ .)  +
-     geom_vline(data=cdf, aes(xintercept=log(latency.mean)),
-                linetype="solid", size=1, colour="red")
+    xlab("Latency (ms) log scale") +
+    ylab("Number of speedtests (count)") +
 
+     geom_vline(data=cdf, aes(xintercept=latency.mean),
+                linetype="solid", size=1, colour="red")
 ```
 
-For latency smaller is better, so in this plot we are looking at which operator has the smallest latency. Again we see the red lines per operator. The x axis are on a log scale to these are factors of ten. The average latency(red line) for T-Mobile is the most to the left, which means T-Mobile has the smallest average latency of the three operators.
+For latency smaller is better, so in this plot we are looking at which operator has the smallest latency. Again we see the red lines per operator. The average latency(red line) for T-Mobile is the most to the left, which means T-Mobile has the smallest average latency of the three operators.
 
 Box-plot
 ---------
@@ -761,8 +823,10 @@ We see a box plot for each of the operators on the x axis, the vertical axis sho
 
 ```{r box-down, fig.cap='Boxplot download speed per operator',fig.height=3}
 # boxplot
-ggplot(df.4G, aes(x=operator, y=download_kbps, fill=operator)) + geom_boxplot() +
-    guides(fill=FALSE) + stat_summary(fun.y=mean, geom="point", shape=5, size=4)
+ggplot(df.4G, aes(x=operator, y=download_kbps, fill=operator)) + 
+  geom_boxplot() +
+  ylab("Download speed (Kbps)") +
+  guides(fill=FALSE) + stat_summary(fun.y=mean, geom="point", shape=5, size=4)
 
 ```
 
@@ -775,16 +839,18 @@ names(qdwn) <- c("operator","10%","5%","1%")
 kable(qdwn, caption="Top percentiles average download speed(Kbps)")
 ```
 
-From the table we see that T-Mobile scores best in the 10% and 5% percentile of download speed tests per operator.
+From the table we see that T-Mobile scores best in the 10%  of download speed tests per operator. For the 5% percentile the T-Mobile outcome is very close to the KPN outcome but both better then Vodafone.
 
-In the top 1% of download speed tests Vodafone scores best, followed by KPN. Both these operators they have the LTE-Advanced technology in some locations mostly in the largest cities. This technology is supported by a small number of devices. In excellent radio conditions and in case the user has a suitable device, download speeds higher than 150MBps (up to 225Mbps) can be achieved. This is the case in less than 1% of all tests of KPN and Vodafone, but also the main reason why the top 1% for these two operators is higher than T-Mobile’s. The LTE-advanced technology does not contribute to higher upload speeds nor lower latency.
+In the top 1% of download speed tests KPN scores best, followed by Vodafone. Both these operators they have the LTE-Advanced technology in some locations mostly in the largest cities. This technology is supported by a small number of devices. In excellent radio conditions and in case the user has a suitable device, download speeds higher than 150MBps (up to 225Mbps) can be achieved. This is the case in less than 1% of all tests of KPN and Vodafone, but also the main reason why the top 1% for these two operators is higher than T-Mobile’s. The LTE-advanced technology does not contribute to higher upload speeds nor lower latency.
 
 ### Upload speed
 We see a box plot for each of the operators on the x axis, the vertical axis shows the speed test values in Kbps. The daimond shape represents the mean, the thick line represents the median. the black dots on the top and bottom represent extreme cases. The data is split up into quartiles, that means four equally sized proportions. The first and fourth quarter are represented as a line, the second and third as a box.
 
 ```{r box-up, fig.cap='Boxplot upload speed per operator',fig.height=3}
 # boxplot
-ggplot(df.4G, aes(x=operator, y=upload_kbps, fill=operator)) + geom_boxplot() +
+ggplot(df.4G, aes(x=operator, y=upload_kbps, fill=operator)) + 
+  geom_boxplot() +
+    ylab("Upload speed (Kbps)") +
     guides(fill=FALSE) + stat_summary(fun.y=mean, geom="point", shape=5, size=4)
 
 ```
@@ -807,12 +873,23 @@ We see a box plot for each of the operators on the x axis, the vertical axis sho
 
 ```{r box-latency, fig.cap='Boxplot latency speed per operator',fig.height=3}
 # boxplot
-ggplot(df.4G, aes(x=operator, y=log(latency), fill=operator)) + geom_boxplot() +
+ggplot(df.4G, aes(x=operator, y=latency, fill=operator)) + 
+    geom_boxplot() +
+    scale_y_log10() + ylab("Latency (ms) log scale") +
     guides(fill=FALSE) + stat_summary(fun.y=mean, geom="point", shape=5, size=4)
 
 ```
 
-In the box-plot for latancy we see that for T-Mobile the diamond shape(average) and the thick line representing the median are lower then the same values for the other operators. Remember, for latancy lower is better. So in this box-plot for latency we see that T-Mobile has the lowest latency.
+In the box-plot for latancy we see that for T-Mobile the diamond shape(average) and the thick line representing the median are lower then the same values for the other operators. Remember, for latancy lower is better. 
+
+If we look at the fastest 1%, 5% and 10% percentiles we see the following table:
+
+```{r quant-lat}
+qlat <- ddply(df.4G,.(operator), function(x) round(quantile(x$latency,c(.01,.05,.1)),2))
+names(qlat) <- c("operator","1%","5%","10%")
+kable(qlat, caption="Top percentiles average latency (Kbps)")
+```
+
 
 \newpage
 
@@ -864,9 +941,9 @@ df.tr.upload <- fn.ttest(df.4G,"upload_kbps",conflevel)
 df.tr.latency <- fn.ttest(df.4G,"latency",conflevel)
 
 # print test result 
-print(xtable(df.tr.dwnload,format = "pandoc" ,  caption = "Comparison of means for metric: download(kbps)",row.names=FALSE, booktabs=TRUE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
-print(xtable(df.tr.upload,format = "pandoc" ,  caption = "Comparison of means for metric: upload(kbps)",row.names=FALSE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
-print(xtable(df.tr.latency,format = "pandoc",  caption = "Comparison of means for metric: latency(ms)",row.names=FALSE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
+print(xtable(df.tr.dwnload,format = "pandoc" ,  caption = "Comparison of means for metric: Download (Kbps)",row.names=FALSE, booktabs=TRUE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
+print(xtable(df.tr.upload,format = "pandoc" ,  caption = "Comparison of means for metric: Upload (Kbps)",row.names=FALSE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
+print(xtable(df.tr.latency,format = "pandoc",  caption = "Comparison of means for metric: Latency (ms)",row.names=FALSE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
 
 
 ```
@@ -891,9 +968,9 @@ l2 <- min(as.numeric(as.character(df.tr.dwnload["T-Mobile vs Vodafone","Mean 1"]
 
 **Sample 2**: Number of speed test samples for operator 2.
 
-**Mean 1**: Average speed of speed tests for operator 1 in KBps. A high number here means that this operator has a fast download(or upload) speed. For the latency a high number means you have to wait longer to contact webpages or servers.
+**Mean 1**: Average speed of speed tests for operator 1 in Kbps. A high number here means that this operator has a fast download(or upload) speed. For the latency a high number means you have to wait longer to contact webpages or servers.
 
-**Mean 2**: Average speed of speed tests for operator 2 in KBps. A high number here means that this operator has a fast download(or upload) speed. For the latency a high number means you have to wait longer to contact webpages or servers.
+**Mean 2**: Average speed of speed tests for operator 2 in Kbps. A high number here means that this operator has a fast download(or upload) speed. For the latency a high number means you have to wait longer to contact webpages or servers.
 
 **P-value**: The test statistic, for more explanation see the paragraph P-Value above
 
@@ -928,7 +1005,7 @@ top.n=21
 
 Analysis and results Top `r top.n` cities per city 
 =============
-From CBS we have the following top `r top.n` cities based on number of inhabitants("aantal inwoners") from 2014. We see that Zwolle is now number twenty in favour of Maastricht(now 21). For completness we keep Maastricht in the list of cities to be analysed.  
+From CBS we have the following top `r top.n` cities based on number of inhabitants("aantal inwoners") from 2014. We see that Zwolle is now number twenty in favour of Maastricht(now `r top.n`). For completness we keep Maastricht in the list of cities to be analysed.  
 
 
 ```{r get_top_n}
@@ -979,12 +1056,12 @@ In this test we use the CBS cities in this area as the benchmark area for the ov
 
 In more detailed analysis we investigate the top twenty "Gemeentes" based on number of inhabitants. based on data available at [CBS](http://www.cbs.nl/nl-NL/menu/themas/dossiers/nederland-regionaal/publicaties/geografische-data/archief/2014/2013-wijk-en-buurtkaart-art.htm).
 
-The coverage area of top 20 cities looks like this.
+The coverage area of top 21 cities looks like this.
 
 ```{r top, echo=FALSE}
 library(png)
 library(grid)
-img <- readPNG("./img/top20gemeentes-cbs-2014.png")
+img <- readPNG("./img/top21gemeentes-cbs-2014.png")
  grid.raster(img)
 ```
 

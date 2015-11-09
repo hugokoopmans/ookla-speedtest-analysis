@@ -32,7 +32,7 @@ tm4gcoverage t, nlstaging.gem_2014 g
 where
 g.gm_code = t.gm_code
 AND
-t.tmnl_has_4g = 1
+t.tmnl_had_4g_q3_2015 = 1
 ) f
 where
 o.technology = '4G' 
@@ -42,6 +42,7 @@ AND
 o.operator IN ('T-Mobile NL','Vodafone NL','KPN NL')
 ;
 
+-- check
 select operator,count(*) from datatm4gcoverage group by operator order by count desc;
 
 -- test

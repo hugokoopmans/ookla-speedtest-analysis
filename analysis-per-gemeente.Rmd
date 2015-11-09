@@ -16,9 +16,9 @@ df.tr.upload.g <- fn.ttest(df.tmp,"upload_kbps",conflevel)
 df.tr.latency.g <- fn.ttest(df.tmp,"latency",conflevel)
 
 # print test result 
-print(xtable(df.tr.dwnload.g,format = "pandoc" ,  caption = "Comparison of means for metric: download(kbps)",row.names=FALSE, booktabs=TRUE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
-print(xtable(df.tr.upload.g,format = "pandoc" ,  caption = "Comparison of means for metric: upload(kbps)",row.names=FALSE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
-print(xtable(df.tr.latency.g,format = "pandoc",  caption = "Comparison of means for metric: latency(ms)",row.names=FALSE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
+print(xtable(df.tr.dwnload.g,format = "pandoc" ,  caption = "Comparison of means for metric: Download (Kbps)",row.names=FALSE, booktabs=TRUE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
+print(xtable(df.tr.upload.g,format = "pandoc" ,  caption = "Comparison of means for metric: Upload (Kbps)",row.names=FALSE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
+print(xtable(df.tr.latency.g,format = "pandoc",  caption = "Comparison of means for metric: Latency (ms)",row.names=FALSE), size="\\footnotesize",include.rownames=FALSE,comment=FALSE)
 
 ```
 
