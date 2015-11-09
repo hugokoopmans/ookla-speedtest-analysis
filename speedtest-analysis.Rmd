@@ -370,7 +370,7 @@ After filtering these devices the data set has `r nrow(df.ad)`-`r nrow(df.ad)-nr
 
 Top three operators
 -------------------
-For this analysis we are only interested in the top three operators in the Netherlands. In the data set, at this point, there are `r length(levels(as.factor(df.clnd$operator)))` different operators identified. As we can see in the table below, in which we ranked the ten most used operators, most of the speed tests were performed by people using one of the three operators we are interested in. There are 7423 tests with no identifiable operator. We will filter out all but the top 3 operators and proceed with speed tests from these top three operators.
+For this analysis we are only interested in the top three operators in the Netherlands. In the data set, at this point, there are `r length(levels(as.factor(df.clnd$operator)))` different operators identified. As we can see in the table below, in which we ranked the ten most used operators, most of the speed tests were performed by people using one of the three operators we are interested in. There are 7137 tests with no identifiable operator. We will filter out all but the top 3 operators and proceed with speed tests from these top three operators.
 
 ```{r top-operators}
 top10 <- head(sort(table(df.clnd$operator),decreasing = TRUE),n=10)
@@ -887,7 +887,7 @@ If we look at the fastest 1%, 5% and 10% percentiles we see the following table:
 ```{r quant-lat}
 qlat <- ddply(df.4G,.(operator), function(x) round(quantile(x$latency,c(.01,.05,.1)),2))
 names(qlat) <- c("operator","1%","5%","10%")
-kable(qlat, caption="Top percentiles average latency (Kbps)")
+kable(qlat, caption="Top percentiles average latency (ms)")
 ```
 
 
@@ -1029,6 +1029,9 @@ df.top <- head(df.top.25,top.n)
 
 # aantal inwoners
 aantal.inw.sum <- as.integer(sum(df.top$aant_inw))
+# CBS data is in Hectare
+# 100 ha in 1 km2
+df.top$opp_land <- df.top$opp_land/100
 aantal.km2.sum <- as.integer(sum(df.top$opp_land))
 
 # aantal inwoners NL 
@@ -1039,7 +1042,7 @@ aantal.inw.nl <- as.integer(fetch(res, n = -1))
 sink <- dbDisconnect(con)
 
 # print table
-kable(df.top)
+kable(df.top,col.names=c('code','naam','aantal inwoners','oppervlak(km^2^)'))
 
 # Add unknown as seperate "gemeente"
 df.top.plus.unknown <- rbind(df.top, c("---","Unkown Location", nrow(df.unkwnloc)))
@@ -1065,7 +1068,7 @@ img <- readPNG("./img/top21gemeentes-cbs-2014.png")
  grid.raster(img)
 ```
 
-From the CBS data we learn that the top `r top.n` cities covers `r aantal.inw.sum` out of `r aantal.inw.nl` inhabitants. Which is `r round(100*aantal.inw.sum/aantal.inw.nl,2)` %. In terms of area this is `r aantal.km2.sum` km^2 of a total of 41545 km^2, which is `r round(100*aantal.km2.sum/41545,2)`%. 
+From the CBS data we learn that the top `r top.n` cities cover `r aantal.inw.sum` out of `r aantal.inw.nl` inhabitants. Which is `r round(100*aantal.inw.sum/aantal.inw.nl,2)` %. In terms of area this is `r aantal.km2.sum` km^2^ of a total of 41545 km^2^, which is `r round(100*aantal.km2.sum/41545,2)`%. 
 
 For each city we will do the significance test separately in the next pages.
 
