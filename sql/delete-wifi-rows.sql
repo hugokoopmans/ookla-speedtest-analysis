@@ -24,3 +24,5 @@ WHERE connection_type=2;
 
 DELETE FROM PI_OOKLA_WP_DATA
 WHERE connection_type=2;
+
+select count(*) from OOKLA_ALL_DATA;
