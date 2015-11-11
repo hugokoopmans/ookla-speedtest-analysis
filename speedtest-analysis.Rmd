@@ -44,9 +44,9 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 
 Abstract
 ========
-In this document we have conducted a statistical analysis of Ookla’s NetMetrics data from speedtest.net. Ookla provides commercially available speed test data collected by their mobile app on the three main mobile platforms, Android, iOS and Windows mobile. We will load all the raw speed test data into a database, analyse the data ot the top three operators(T-Mobile, Vodafone and KPN) and perform a test on how fast their respective 4G networks are. Our test will be on download speed, upload speed and latency(or ping).
+In this document we have conducted a statistical analysis of Ookla’s Speedtest Intelligence  data from [speedtest.net](http://www.speedtest.net/). Ookla provides commercially available speed test data collected by their mobile app on the three main mobile platforms, Android, iOS and Windows mobile. We will load all the raw speed test data into a database, analyse the data ot the top three operators(T-Mobile, Vodafone and KPN) and perform a test on how fast their respective 4G networks are. Our test will be on download speed, upload speed and latency(or ping).
 
-The speed test data that is provided by Ookla’s NetMetrics data from speedtest.net and obtained by T-Mobile is of  `r p.ListQuarterMonths[1]`, `r p.ListQuarterMonths[2]` and `r p.ListQuarterMonths[3]` `r p.Year`. We will analyse and validate the data step by step. After investigation on suspicious testing circumstances, such as, but not limited to, devices, location, theoretical maximum speeds and specific dates the data is ready to be subjected to a significance test. This test will be done for all the data in the coverage area and for the biggest twenty cities in the Netherlands.
+The speed test data that is provided by Ookla’s Speedtest Intelligence  data from [speedtest.net](http://www.speedtest.net/) and obtained by T-Mobile is of  `r p.ListQuarterMonths[1]`, `r p.ListQuarterMonths[2]` and `r p.ListQuarterMonths[3]` `r p.Year`. We will analyse and validate the data step by step. After investigation on suspicious testing circumstances, such as, but not limited to, devices, location, theoretical maximum speeds and specific dates the data is ready to be subjected to a significance test. This test will be done for all the data in the coverage area and for the biggest twenty cities in the Netherlands.
 
 The result of these tests will give an answer to whether or not T-Mobile has on average a faster 4G network than Vodafone and/or KPN, based on the three metrics upload speed, download speed and latency.
 
@@ -55,7 +55,7 @@ The result of these tests will give an answer to whether or not T-Mobile has on 
 Introduction
 ===========
 This document is a report of a statistical analysis of 4G network speed test data. The time period we consider is `r p.QuarterNumber` `r p.Year` so the months `r p.ListQuarterMonths[1]`, `r p.ListQuarterMonths[2]` and `r p.ListQuarterMonths[3]` of `r p.Year` are in scope. 
-We perform an analysis of [Ookla](http://www.ookla.com/) NetMetrics Data data on three different measures: 
+We perform an analysis of [Ookla](http://www.ookla.com/) Speedtest Intelligence data on three different measures: 
 
 * download speed 
 * upload speed 
@@ -132,13 +132,13 @@ So we start this analysis with in total `r nrow(df.ad)` speed tests, which are r
 
 Speedtest.net data
 ----------------
-Ookla designed their speed test in such a way that the results are as robust as possible. Ookla’s speedtest.net is the de-facto standard for internet speed testing. According to http://www.ookla.com/netmetrics, NetMetrics is the choice of nearly every Fortune 500 ISP and Mobile Provider in the world. For more information please visit [Speeedtest.net](https://support.speedtest.net/hc/en-us).
+Ookla designed their speed test in such a way that the results are as robust as possible. Ookla’s [speedtest.net](http://www.speedtest.net/) is the de-facto standard for internet speed testing. According to http://www.ookla.com/speedtest-intelligence, Speedtest Intelligence  is the choice of nearly every Fortune 500 ISP and Mobile Provider in the world. For more information please visit [Speedtest.net](https://support.speedtest.net/hc/en-us).
 
 Sample test data from Ookla
 --------------------------
 Ookla has some random sample data available, this data can be used to validate our method. To validate the test result one would need the specific data of the Netherlands.
 
-A sample set of Ookla NetMetrics data can be found [here](http://www.ookla.com/netmetrics). The files differ per mobile platform. The file descriptors for all three mobile platforms are listed below.
+A sample set of Ookla Speedtest Intelligence  data can be found [here](http://www.ookla.com/speedtest-intelligence). The files differ per mobile platform. The file descriptors for all three mobile platforms are listed below.
 
 ### Android header descriptives
 
@@ -388,7 +388,7 @@ This leaves `r nrow(df.clnd)` - `r nrow(df.clnd)-nrow(df.clnd.t3)` = `r nrow(df.
 
 Focus on 4G technology
 ----------------
-In the raw Ookla Netmetrics data the variable called 'connection_type' identifies which technology is used, this variable can be transformed into the network technology used while performing the test.
+In the raw Ookla Speedtest Intelligence  data the variable called 'connection_type' identifies which technology is used, this variable can be transformed into the network technology used while performing the test.
 
 The variable Connection type defines 4G as connection type 15 for Android. For iOS connection type 12 is LTE, and for Windows Mobile connection type 11 is LTE.
 
@@ -895,7 +895,7 @@ kable(qlat, caption="Top percentiles average latency (ms)")
 
 Step 4: Test design
 =========
-What we want to test is if, on average, a customer that uses T-Mobile 4G Mobile Network gets a higher average speed(in terms of download speed, upload speed and latency) than a customer using KPN’s or Vodafone’s 4G Mobile Network, with all else equal. To do this we have collected thousands of Ookla NetMetrics Speedtest results taken from the three top operators (KPN, Vodafone and T-Mobile) which have been filtered as set out in the above to a final dataset consisting of `r nrow(df.4G)` data points. Now we want to compare T-Mobile with the other two operators. So we do two tests: the first is comparing T-Mobile with KPN and the second is comparing T-Mobile with Vodafone. In each test we compare all three metrics: Upload speed, Download speed and latency(or ping). For each operator we have a sample set available in the data. These sets are so called samples (from the Dutch population of mobile phone users) from which we calculate the sample means. Now our statistical test tests if these sample means are significantly different from one another.
+What we want to test is if, on average, a customer that uses T-Mobile 4G Mobile Network gets a higher average speed(in terms of download speed, upload speed and latency) than a customer using KPN’s or Vodafone’s 4G Mobile Network, with all else equal. To do this we have collected thousands of Ookla Speedtest results taken from the three top operators (KPN, Vodafone and T-Mobile) which have been filtered as set out in the above to a final dataset consisting of `r nrow(df.4G)` data points. Now we want to compare T-Mobile with the other two operators. So we do two tests: the first is comparing T-Mobile with KPN and the second is comparing T-Mobile with Vodafone. In each test we compare all three metrics: Upload speed, Download speed and latency(or ping). For each operator we have a sample set available in the data. These sets are so called samples (from the Dutch population of mobile phone users) from which we calculate the sample means. Now our statistical test tests if these sample means are significantly different from one another.
 
 In practice, the Central Limit Theorem assures us that, under a wide range of assumptions, the distributions of the two sample means being tested will themselves approach Normal distributions as the sample sizes get large, regardless (this is where the assumptions come in) of the distributions of the underlying data. As a consequence, as the sample size gets larger, the difference of the means becomes normally distributed, and the requirements necessary for the t-statistic of an unpaired t-test to have the nominal t distribution become satisfied.
 
